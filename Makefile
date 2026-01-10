@@ -35,7 +35,7 @@
 # MA 02110-1301, USA.
 
 
-CFLAGS := -ffreestanding -Wall -Wextra -static -nostartfiles -nostdlib -fno-pie -no-pie -mno-red-zone -mcmodel=large -T linker.ld
+CFLAGS := -ffreestanding -Wall -Wextra -Wunused-parameter -static -nostartfiles -nostdlib -fno-pie -no-pie -mno-red-zone -mcmodel=large -T linker.ld
 QEMU_CPU ?=
 QEMU_MEM ?= -m 2G
 all: clean build/uefi.img kernel run
@@ -47,7 +47,10 @@ kernel:
 	gcc -ffreestanding -c src/drivers/klibc/memory.c -o build/memory.o $(CFLAGS) 
 	gcc -ffreestanding -c src/drivers/klibc/stdio.c -o build/stdio.o $(CFLAGS) 
 	gcc -ffreestanding -c src/drivers/util/math.c -o build/math.o $(CFLAGS) 
-	ld -T linker.ld -nostdlib -static -o build/kernel.elf build/kernel.o build/term.o build/stdio.o build/memory.o build/math.o 
+	gcc -ffreestanding -c src/drivers/util/serial.c -o build/serial.o $(CFLAGS)
+	gcc -ffreestanding -c src/arch/x86_64/gdt_idt.c -o build/gdt_idt.o $(CFLAGS)
+	gcc -ffreestanding -c src/arch/x86_64/io.c -o build/io.o $(CFLAGS) 
+	ld -T linker.ld -nostdlib -static -o build/kernel.elf build/kernel.o build/term.o build/stdio.o build/memory.o build/math.o build/serial.o build/gdt_idt.o build/io.o
 
 # Author: Jerry Jhird
 #License: MPLv2.0

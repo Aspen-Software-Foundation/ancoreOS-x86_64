@@ -41,8 +41,7 @@
 #include "../../limine/limine.h"
 #include "../includes/util/math.h"
 #include "../includes/klibc/stdio.h"
-
-
+#include "../includes/util/serial.h"
 
 static volatile struct limine_framebuffer_request fb_req = {
     .id = LIMINE_FRAMEBUFFER_REQUEST_ID,
@@ -52,8 +51,10 @@ static volatile struct limine_framebuffer_request fb_req = {
 struct terminal fb_term;
 
 void kernel_main(void) {
-    struct limine_framebuffer *fb = fb_req.response->framebuffers[0];\
+    struct limine_framebuffer *fb = fb_req.response->framebuffers[0];
     terminal_set_instance(&fb_term, 0xFFFFFF);
+
+serial_init();
 
     cuoreterm_init(
          &fb_term,
@@ -79,7 +80,7 @@ void kernel_main(void) {
     writestr(&fb_term, "\x1b[#7300FFm[ debug ]\x1b[0m Successfully initalized kernel\n", 56);
 
     
-
+    serial_write("bsdfasdfas", 100);
 
 
     while (1);

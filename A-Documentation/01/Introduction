@@ -25,7 +25,10 @@ Preface:
 
     Currently, the VNiX Operating System uses Cuoreterm for the framebuffer. Cuoreterm is a super lightweight and freestanding framebuffer made by JerryJhird
     for CuoreOS. VNiX also features RISCV32 program support, made by Dcraftbg. For more information about either one of these project, visit the links below:
+    This OS also features the Limine Bootloader, because of its extensive features and ease of use. I personally support its goals and achievements, which is why
+    I've included it in this project.
 
+    Links:                v v v
     CuoreOS: https://github.com/jerryjhird/CuoreOS
     Cuoreterm: https://github.com/jerryjhird/Cuoreterm
     rv_vm.h: https://codeberg.org/Dcraftbg/rv_vm.h
@@ -43,4 +46,4 @@ Preface:
 
 
 
-NOTE: Windows is copyrighted and trademarked by the Microsoft Corporation. Linux is trademarked by Linus Torvalds.
+NOTE: Windows is copyrighted and trademarked by the Microsoft Corporation. Linux is trademarked by Linus Torvalds. All rights belong to their respective owners
