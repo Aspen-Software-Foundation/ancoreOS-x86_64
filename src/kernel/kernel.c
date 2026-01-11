@@ -39,7 +39,6 @@
 #include "../drivers/framebuffer/src/cuoreterm.h"
 #include "../drivers/framebuffer/src/kfont.h"
 #include "../../limine/limine.h"
-#include "../includes/util/math.h"
 #include "../includes/klibc/stdio.h"
 #include "../includes/util/serial.h"
 
@@ -54,7 +53,7 @@ void kernel_main(void) {
     struct limine_framebuffer *fb = fb_req.response->framebuffers[0];
     terminal_set_instance(&fb_term, 0xFFFFFF);
 
-serial_init();
+    serial_init();
 
     cuoreterm_init(
          &fb_term,
