@@ -49,7 +49,7 @@ kernel:
 	gcc -ffreestanding -c src/drivers/util/serial.c -o build/serial.o $(CFLAGS)
 	gcc -ffreestanding -c src/arch/x86_64/gdt_idt.c -o build/gdt_idt.o $(CFLAGS)
 	gcc -ffreestanding -c src/arch/x86_64/io.c -o build/io.o $(CFLAGS) 
-	ld -T linker.ld -nostdlib -static -o build/kernel.elf build/kernel.o build/term.o build/stdio.o build/memory.o build/math.o build/serial.o build/gdt_idt.o build/io.o
+	ld -T linker.ld -nostdlib -static -o build/kernel.elf build/kernel.o build/term.o build/stdio.o build/memory.o  build/serial.o build/gdt_idt.o build/io.o
 
 # Author: Jerry Jhird
 #License: MPLv2.0

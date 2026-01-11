@@ -79,7 +79,7 @@ void kernel_main(void) {
     writestr(&fb_term, "\x1b[#7300FFm[ debug ]\x1b[0m Successfully initalized kernel\n", 56);
 
     
-    serial_write("bsdfasdfas", 100);
+    serial_write("bsdfasdfas", 11);
 
 
     while (1);
