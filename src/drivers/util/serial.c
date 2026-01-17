@@ -9,8 +9,10 @@ https://mozilla.org/MPL/2.0/.
 */
 
 #include "includes/arch/x86_64/io.h"
+#include "includes/klibc/string.h"
 #include <stdint.h>
 #include <stddef.h>
+#include <stdarg.h>
 
 #define SERIAL_COM1  0x3F8          // COM1
 
@@ -35,9 +37,118 @@ static void serial_putc(char c) {
     outb(SERIAL_COM1, (uint8_t)c);
 }
 
-void serial_write(const char *msg, size_t len) {
-    for (size_t i = 0; i < len; i++) {
+void serial_write(const char *msg) {
+    for (size_t i = 0; i < strlen(msg); i++) {
         if (msg[i] == '\n') serial_putc('\r');
         serial_putc(msg[i]);
     }
 }
+
+// Made by Yazin Tantawi
+static void serial_print_hex(uint64_t num, int width) {
+    char hex[] = "0123456789abcdef";
+    char buffer[17]; // max 16 hex digits + null
+    int i = 0;
+    
+    if (num == 0) {
+        serial_putc('0');
+        return;
+    }
+    
+    while (num > 0 && i < 16) {
+        buffer[i++] = hex[num & 0xF];
+        num >>= 4;
+    }
+    
+    while (i < width) {
+        buffer[i++] = '0';
+    }
+    
+    while (i > 0) {
+        serial_putc(buffer[--i]);
+    }
+}
+
+
+static void serial_print_dec(int64_t num) {
+    if (num < 0) {
+        serial_putc('-');
+        num = -num;
+    }
+    
+    if (num == 0) {
+        serial_putc('0');
+        return;
+    }
+    
+    char buffer[20];
+    int i = 0;
+    
+    while (num > 0) {
+        buffer[i++] = '0' + (num % 10);
+        num /= 10;
+    }
+    
+    while (i > 0) {
+        serial_putc(buffer[--i]);
+    }
+}
+
+
+void serial_printf(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    
+    for (const char *p = fmt; *p; p++) {
+        if (*p == '%' && *(p + 1)) {
+            p++;
+            switch (*p) {
+                case 'd':  
+                case 'i':
+                    serial_print_dec(va_arg(args, int));
+                    break;
+                    
+                case 'u':  
+                    serial_print_dec(va_arg(args, unsigned int));
+                    break;
+                    
+                case 'x': 
+                    serial_print_hex(va_arg(args, unsigned int), 0);
+                    break;
+                    
+                case 'X': 
+                    serial_print_hex(va_arg(args, unsigned int), 0);
+                    break;
+                    
+                case 'p':  
+                    serial_write("0x");
+                    serial_print_hex(va_arg(args, uint64_t), 16);
+                    break;
+                    
+                case 's': 
+                    serial_write(va_arg(args, const char*));
+                    break;
+                    
+                case 'c': 
+                    serial_putc((char)va_arg(args, int));
+                    break;
+                    
+                case '%': 
+                    serial_putc('%');
+                    break;
+                    
+                default:
+                    serial_putc('%');
+                    serial_putc(*p);
+                    break;
+            }
+        } else {
+            if (*p == '\n') serial_putc('\r');
+            serial_putc(*p);
+        }
+    }
+    
+    va_end(args);
+}
+
+//End code attribution

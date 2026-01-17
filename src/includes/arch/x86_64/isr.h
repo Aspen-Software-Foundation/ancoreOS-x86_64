@@ -1,9 +1,9 @@
 /*
     Copyright (C) 2026 Aspen Software Foundation
 
-    Module: idt.h
-    Description: IDT module for the Ancore Operating System
-    Author: Mejd Almohammedi 
+    Module: isr.h
+    Description: Interrupt Service Routine module for the Ancore Operating System
+    Author: Mejd Almohammedi
 
     All components of the Ancore Operating System, except where otherwise noted, 
     are copyright of the Aspen Software Foundation (and the corresponding author(s)) and licensed under GPLv2 or later.
@@ -35,32 +35,57 @@
  * FOUNDATION, INC., 51 FRANKLIN STREET, FIFTH FLOOR, BOSTON,
  * MA 02110-1301, USA.
 */
-#ifndef IDT_H
-#define IDT_H
 
+
+#ifndef ISR_H
+#define ISR_H
 #include <stdint.h>
 
+typedef struct {
+    // in the reverse order they are pushed:
+    uint32_t ds;                                            // data segment pushed by us
+    uint32_t edi, esi, ebp, useless, ebx, edx, ecx, eax;    // pusha
+    uint32_t interrupt, error;                              // we push interrupt, error is pushed automatically (or our dummy)
+    uint32_t eip, cs, eflags, esp, ss;                      // pushed automatically by CPU
+} __attribute__((packed)) Registers_t;
 
+static const char *const g_Exceptions[] = {
+    "Divide by zero error",
+    "Debug",
+    "Non-maskable Interrupt",
+    "Breakpoint",
+    "Overflow",
+    "Bound Range Exceeded",
+    "Invalid Opcode",
+    "Device Not Available",
+    "Double Fault",
+    "Coprocessor Segment Overrun",
+    "Invalid TSS",
+    "Segment Not Present",
+    "Stack-Segment Fault",
+    "General Protection Fault",
+    "Page Fault",
+    "",
+    "x87 Floating-Point Exception",
+    "Alignment Check",
+    "Machine Check",
+    "SIMD Floating-Point Exception",
+    "Virtualization Exception",
+    "Control Protection Exception ",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "Hypervisor Injection Exception",
+    "VMM Communication Exception",
+    "Security Exception",
+    ""
+};
 
-typedef enum {
-    IDT_FLAG_GATE_TASK              = 0x5,
-    IDT_FLAG_GATE_16BIT_INT         = 0x6,
-    IDT_FLAG_GATE_16BIT_TRAP        = 0x7,
-    IDT_FLAG_GATE_32BIT_INT         = 0xE,
-    IDT_FLAG_GATE_32BIT_TRAP        = 0xF,
+typedef void (*ISRHandler_t)(Registers_t *regs);
 
-    IDT_FLAG_RING0                  = (0 << 5),
-    IDT_FLAG_RING1                  = (1 << 5),
-    IDT_FLAG_RING2                  = (2 << 5),
-    IDT_FLAG_RING3                  = (3 << 5),
-
-    IDT_FLAG_PRESENT                = 0x80,
-
-} IDT_FLAGS_t;
-
-void IDT_Initialize();
-void IDT_DisableGate(int interrupt);
-void IDT_EnableGate(int interrupt);
-void IDT_SetGate(int interrupt, void *base, uint16_t segmentDescriptor, uint8_t flags);
-
-#endif 
+void ISR_Initialize();
+void ISR_RegisterHandler(int interrupt, ISRHandler_t handler);
+#endif // ISR_H

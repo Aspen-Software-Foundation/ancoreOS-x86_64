@@ -1,8 +1,8 @@
 /*
     Copyright (C) 2026 Aspen Software Foundation
 
-    Module: stdint.h
-    Description: STDINT module for the Ancore Operating System
+    Module: stdarg.h
+    Description: Variable arguments module for the Ancore Operating System
     Author: Yazin Tantawi
 
     All components of the Ancore Operating System, except where otherwise noted, 
@@ -36,73 +36,14 @@
  * MA 02110-1301, USA.
 */
 
-#ifndef STDINT_H
-#define STDINT_H
+#ifndef _STDARG_H
+#define _STDARG_H
 
-#include <limits.h>
+typedef __builtin_va_list va_list;
 
+#define va_start(ap, last)    __builtin_va_start(ap, last)
+#define va_arg(ap, type)      __builtin_va_arg(ap, type)
+#define va_end(ap)            __builtin_va_end(ap)
+#define va_copy(dest, src)    __builtin_va_copy(dest, src)
 
-
-#if UCHAR_MAX == 0xFF
-typedef unsigned char  uint8_t;
-typedef signed char    int8_t;
-#else
-#error "No 8-bit integer type available"
-#endif
-
-
-
-#if USHRT_MAX == 0xFFFF
-typedef unsigned short uint16_t;
-typedef signed short   int16_t;
-#elif UINT_MAX == 0xFFFF
-typedef unsigned int   uint16_t;
-typedef signed int     int16_t;
-#else
-#error "No 16-bit integer type available"
-#endif
-
-
-#if UINT_MAX == 0xFFFFFFFF
-typedef unsigned int  uint32_t;
-typedef signed int    int32_t;
-#elif ULONG_MAX == 0xFFFFFFFF
-typedef unsigned long uint32_t;
-typedef signed long   int32_t;
-#else
-#error "No 32-bit integer type available"
-#endif
-
-
-#if ULONG_MAX == 0xFFFFFFFFFFFFFFFF
-typedef unsigned long      uint64_t;
-typedef signed long        int64_t;
-#elif defined(ULLONG_MAX) && ULLONG_MAX == 0xFFFFFFFFFFFFFFFF
-typedef unsigned long long uint64_t;
-typedef signed long long   int64_t;
-#else
-#error "No 64-bit integer type available"
-#endif
-
-
-#if UINTPTR_MAX == UINT_MAX
-typedef unsigned int  uintptr_t;
-typedef signed int    intptr_t;
-#elif UINTPTR_MAX == ULONG_MAX
-typedef unsigned long uintptr_t;
-typedef signed long   intptr_t;
-#elif defined(ULLONG_MAX) && UINTPTR_MAX == ULLONG_MAX
-typedef unsigned long long uintptr_t;
-typedef signed long long   intptr_t;
-#else
-#error "No pointer-sized integer type available"
-#endif
-
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-_Static_assert(sizeof(uint8_t)  == 1, "uint8_t wrong size");
-_Static_assert(sizeof(uint16_t) == 2, "uint16_t wrong size");
-_Static_assert(sizeof(uint32_t) == 4, "uint32_t wrong size");
-_Static_assert(sizeof(uint64_t) == 8, "uint64_t wrong size");
-#endif
-
-#endif /* STDINT_H */
+#endif 

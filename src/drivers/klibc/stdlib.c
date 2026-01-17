@@ -65,34 +65,29 @@ char *itoa(int32_t value, char *str, uint32_t base) {
     int i = 0;
     int isNegative = 0;
 
-    // Handle 0 explicitly
     if (value == 0) {
         str[i++] = '0';
         str[i] = '\0';
         return str;
     }
 
-    // Handle negative numbers for base 10
     if (value < 0 && base == 10) {
         isNegative = 1;
-        value = -value;  // Make the value positive
+        value = -value;  
     }
 
-    // Process digits
     while (value != 0) {
         int rem = value % base;
         str[i++] = (rem > 9) ? (rem - 10) + 'a' : rem + '0';  // Convert to char
         value = value / base;
     }
 
-    // Add negative sign if necessary
     if (isNegative) {
         str[i++] = '-';
     }
 
-    str[i] = '\0';  // Null-terminate the string
+    str[i] = '\0'; 
 
-    // Reverse the string to get the correct order
     int start = 0;
     int end = i - 1;
     while (start < end) {
@@ -112,6 +107,12 @@ void *memset(void *ptr, int value, size_t num) {
         *p++ = (uint8_t)value;
     }
     return ptr;
+}
+
+void exit(int status) {
+
+    (void)status;
+    while(1) halt();
 }
 
 void *memcpy(void *dest, const void *src, size_t n) {
@@ -183,7 +184,6 @@ void free(void* ptr, size_t size) {
         heap_ptr = (uint8_t*)block; // rewind heap pointer
     }
 }
-
 //End Code Attribution
 
 
@@ -195,5 +195,225 @@ int8_t memcmp_const(const void *ptr1, const uint8_t val, size_t n) {
             return (int8_t)(s1[i] - val);
         }
     }
-    return 0;}
+    return 0;
+}
 
+
+void* calloc(size_t num, size_t size) {
+    size_t total = num * size;
+    void* ptr = malloc(total);
+    if (ptr) {
+        char* p = ptr;
+        for (size_t i = 0; i < total; i++) {
+            p[i] = 0;
+        }
+    }
+    return ptr;
+}
+
+void* realloc(void* ptr, size_t size) {
+    // TODO: Implement with heap allocator
+    (void)ptr;
+    (void)size;
+    return NULL;
+}
+
+int atoi(const char* str) {
+    int result = 0;
+    int sign = 1;
+    
+    while (*str == ' ' || *str == '\t' || *str == '\n') {
+        str++;
+    }
+    
+    if (*str == '-') {
+        sign = -1;
+        str++;
+    } else if (*str == '+') {
+        str++;
+    }
+    
+    while (*str >= '0' && *str <= '9') {
+        result = result * 10 + (*str - '0');
+        str++;
+    }
+    
+    return sign * result;
+}
+
+long atol(const char* str) {
+    long result = 0;
+    int sign = 1;
+    
+    while (*str == ' ' || *str == '\t' || *str == '\n') {
+        str++;
+    }
+    
+    if (*str == '-') {
+        sign = -1;
+        str++;
+    } else if (*str == '+') {
+        str++;
+    }
+    
+    while (*str >= '0' && *str <= '9') {
+        result = result * 10 + (*str - '0');
+        str++;
+    }
+    
+    return sign * result;
+}
+
+long long atoll(const char* str) {
+    long long result = 0;
+    int sign = 1;
+    
+    while (*str == ' ' || *str == '\t' || *str == '\n') {
+        str++;
+    }
+    
+    if (*str == '-') {
+        sign = -1;
+        str++;
+    } else if (*str == '+') {
+        str++;
+    }
+    
+    while (*str >= '0' && *str <= '9') {
+        result = result * 10 + (*str - '0');
+        str++;
+    }
+    
+    return sign * result;
+}
+
+long strtol(const char* str, char** endptr, int base) {
+    long result = 0;
+    int sign = 1;
+    
+    while (*str == ' ' || *str == '\t' || *str == '\n') {
+        str++;
+    }
+    
+    if (*str == '-') {
+        sign = -1;
+        str++;
+    } else if (*str == '+') {
+        str++;
+    }
+    
+    if (base == 0) {
+        if (*str == '0') {
+            if (str[1] == 'x' || str[1] == 'X') {
+                base = 16;
+                str += 2;
+            } else {
+                base = 8;
+                str++;
+            }
+        } else {
+            base = 10;
+        }
+    } else if (base == 16 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X')) {
+        str += 2;
+    }
+    
+    while (*str) {
+        int digit;
+        if (*str >= '0' && *str <= '9') {
+            digit = *str - '0';
+        } else if (*str >= 'a' && *str <= 'z') {
+            digit = *str - 'a' + 10;
+        } else if (*str >= 'A' && *str <= 'Z') {
+            digit = *str - 'A' + 10;
+        } else {
+            break;
+        }
+        
+        if (digit >= base) break;
+        
+        result = result * base + digit;
+        str++;
+    }
+    
+    if (endptr) {
+        *endptr = (char*)str;
+    }
+    
+    return sign * result;
+}
+
+unsigned long strtoul(const char* str, char** endptr, int base) {
+    return (unsigned long)strtol(str, endptr, base);
+}
+
+long long strtoll(const char* str, char** endptr, int base) {
+    return (long long)strtol(str, endptr, base);
+}
+
+unsigned long long strtoull(const char* str, char** endptr, int base) {
+    return (unsigned long long)strtol(str, endptr, base);
+}
+
+static void swap_bytes(char* a, char* b, size_t size) {
+    while (size--) {
+        char temp = *a;
+        *a++ = *b;
+        *b++ = temp;
+    }
+}
+
+void* bsearch(const void* key, const void* base, size_t num, size_t size,
+              int (*compar)(const void*, const void*)) {
+    const char* pivot;
+    int result;
+    
+    while (num > 0) {
+        pivot = (const char*)base + (num / 2) * size;
+        result = compar(key, pivot);
+        
+        if (result == 0) {
+            return (void*)pivot;
+        }
+        
+        if (result > 0) {
+            base = pivot + size;
+            num = num - (num / 2) - 1;
+        } else {
+            num = num / 2;
+        }
+    }
+    
+    return NULL;
+}
+
+void qsort(void* base, size_t num, size_t size,
+           int (*compar)(const void*, const void*)) {
+    if (num < 2) return;
+    
+    char* arr = (char*)base;
+    char* pivot = arr + (num / 2) * size;
+    char* left = arr;
+    char* right = arr + (num - 1) * size;
+
+    while (left <= right) {
+        while (compar(left, pivot) < 0) left += size;
+        while (compar(right, pivot) > 0) right -= size;
+        
+        if (left <= right) {
+            if (left != right) {
+                swap_bytes(left, right, size);
+            }
+            left += size;
+            right -= size;
+        }
+    }
+    
+
+    if (arr < right) {
+        qsort(arr, (right - arr) / size + 1, size, compar);
+    }
+    if (left < arr + (num - 1) * size) {
+        qsort(left, (arr + (num - 1) * size - left) / size + 1, size, compar);
+    }
+}

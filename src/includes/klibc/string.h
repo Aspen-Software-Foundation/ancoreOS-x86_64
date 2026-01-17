@@ -169,7 +169,6 @@ static inline uint16_Vector3_t make_uint16_vector3(uint16_t x, uint16_t y, uint8
 
 
 
-
 int8_t strncmp(const char *str1, const char *str2, size_t n);
 size_t strlen(const char *str);
 size_t strlcat(char *dst, const char *src, size_t size);
@@ -179,9 +178,7 @@ void strswap(char *str, char char1, char char2);
 uint32_t strcount(char *str, char char1);
 
 
-/* Append SRC onto DEST.  */
 char *strcat (char *dest, const char *src);
-/* Append no more than N characters from SRC onto DEST.  */
 char *strncat (char *dest, const char *src, size_t n);
 
 uint16_Vector3_t rotate_point_x(uint16_Vector3_t point, float angle);

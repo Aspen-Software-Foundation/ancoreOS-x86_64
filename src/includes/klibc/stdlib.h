@@ -35,8 +35,8 @@
  * FOUNDATION, INC., 51 FRANKLIN STREET, FIFTH FLOOR, BOSTON,
  * MA 02110-1301, USA.
 */
-#ifndef MEMORY_H
-#define MEMORY_H
+#ifndef STDLIB_H
+#define STDLIB_H
 
 #include <stdint.h>
 #include <stddef.h>
@@ -52,5 +52,23 @@ int8_t memcmp_const(const void *ptr1, const uint8_t val, size_t n);
 void *itoa(int32_t value, char *str, uint32_t base);
 void* malloc(size_t size);
 void free(void* ptr, size_t size);
+int atoi(const char* str);
+long atol(const char* str);
+long long atoll(const char* str);
 
-#endif // MEMORY_H
+long strtol(const char* str, char** endptr, int base);
+unsigned long strtoul(const char* str, char** endptr, int base);
+long long strtoll(const char* str, char** endptr, int base);
+unsigned long long strtoull(const char* str, char** endptr, int base);
+void* calloc(size_t num, size_t size);
+
+void* bsearch(const void* key, const void* base, size_t num, size_t size,
+              int (*compar)(const void*, const void*));
+
+void qsort(void* base, size_t num, size_t size,
+           int (*compar)(const void*, const void*));
+
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
+#endif

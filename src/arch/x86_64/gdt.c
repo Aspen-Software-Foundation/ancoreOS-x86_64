@@ -41,7 +41,7 @@
 
 #include "includes/arch/x86_64/gdt.h"
 #include <stdint.h>
-#include "includes/klibc/stdio.h"
+#include <stdio.h>
 #include "includes/util/serial.h"
 
 void terminal_set_instance(struct terminal *term, uint32_t fg);
@@ -49,25 +49,22 @@ void terminal_set_instance(struct terminal *term, uint32_t fg);
 void halt() {
     uint64_t rip;
 
-    // Read the current instruction pointer into rip
     __asm__ volatile (
         "leaq (%%rip), %0"
         : "=r"(rip)
     );
 
-    // Print a message with the current RIP
    kprintf("[ EMERGENCY ] HALTED CPU AT INSTRUCTION: 0x%llx\n", rip);
 
-    // Disable interrupts and halt forever
+    // disable interrupts and halt forever
     __asm__ volatile (
         "cli\n"      // disable interrupts
         "1:\n"
-        "hlt\n"      // halt CPU until next interrupt
-        "jmp 1b\n"   // infinite loop
+        "hlt\n"      
+        "jmp 1b\n"   
     );
 }
 
-// Halt CPU indefinitely but allow interrupts (e.g., for idle loop)
 void halt_interrupts_enabled() {
     uint64_t rip;
 
@@ -151,13 +148,11 @@ GDTEntry_t g_GDT[] = {
     // NULL descriptor
     GDT_ENTRY(0, 0, 0, 0),
 
-    // Kernel 32-bit code segment
     GDT_ENTRY(0,
               0xFFFFF,
               ((GDT_ACCESS_PRESENT | GDT_ACCESS_RING0) | (GDT_ACCESS_CODE_SEGMENT | GDT_ACCESS_CODE_READABLE)),
               (GDT_FLAG_64BIT | GDT_FLAG_GRANULARITY_4K)),
 
-    // Kernel 32-bit data segment
     GDT_ENTRY(0,
               0xFFFFF,
               ((GDT_ACCESS_PRESENT | GDT_ACCESS_RING0) | (GDT_ACCESS_DATA_SEGMENT | GDT_ACCESS_DATA_WRITEABLE)),

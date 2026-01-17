@@ -37,7 +37,7 @@
 */
 
 
-#include "includes/klibc/memory.h"
+#include <stdlib.h>
 
 int8_t strncmp(const char *str1, const char *str2, size_t n) {
     while (n-- > 0) {
@@ -50,7 +50,7 @@ int8_t strncmp(const char *str1, const char *str2, size_t n) {
         str1++;
         str2++;
     }
-    return 0;  // Return 0 if strings are equal up to n characters
+    return 0;  
 }
 
 size_t strlen(const char *str) {
@@ -166,11 +166,11 @@ char *strncat(char *dest, const char *src, size_t n)
     char *d = dest;
     /* find end of dest */
     while (*d != '\0') d++;
-    /* copy at most n chars from src, stop early on NUL */
+
     while (n-- != 0 && *src != '\0') {
         *d++ = *src++;
     }
-    /* NUL-terminate the result */
+
     *d = '\0';
     return dest;
 }

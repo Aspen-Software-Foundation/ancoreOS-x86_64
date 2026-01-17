@@ -39,10 +39,11 @@
 #include "drivers/terminal/src/cuoreterm.h"
 #include "drivers/terminal/src/kfont.h"
 #include "arch/limine.h"
-#include "includes/klibc/stdio.h"
+#include <stdio.h>
 #include "includes/util/serial.h"
 #include "includes/arch/x86_64/idt.h"
 #include "includes/arch/x86_64/gdt.h"
+#include "includes/arch/x86_64/isr.h"
 #include "includes/memory/pmm.h"
 
 static volatile struct limine_framebuffer_request fb_req = {
@@ -82,11 +83,13 @@ void kernel_main(void) {
     serial_write("\nWelcome to the Ancore Operating System, made by Aspen\n", 57);
 
     writestr(&fb_term, "\x1b[#7300FFm  [ debug ]\x1b[0m Successfully initalized kernel\n", 58);
-    serial_write("    [[ debug ] Successfully initalized kernel\n", 46);
+    serial_write("[ debug ] Successfully initalized kernel\n", 46);
 
     GDT_Initialize();
     IDT_Initialize();
     pmm_init();
     enable_interrupts();
+    ISR_Initialize();
+
     while (1);
 }

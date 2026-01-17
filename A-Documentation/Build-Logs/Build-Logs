@@ -5,5 +5,12 @@ Version: dev-prototype
     - Added serial printing
     - Added a (in progress) klibc
     - Improved I/O management
+    - Added ISR and error handling
+    - Improved serial capabilities
+    - Removed uneeded comments
+    - Fixed incorrect interrupts flag
+    - Added stdbool
+    - Added background image to limine splash screen
+    - Renamed memory.h/c to stdlib.h/c and improved it 
 
 More to come soon.

@@ -1,7 +1,7 @@
 #include <stddef.h>
 #include "includes/memory/pmm.h"
 #include "arch/limine.h"
-#include "includes/klibc/stdio.h"
+#include <stdio.h>
 #include "includes/util/serial.h"
 
 struct PhysicalMemoryRegion *free_mem_head = NULL;

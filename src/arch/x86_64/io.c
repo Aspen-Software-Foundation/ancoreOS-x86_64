@@ -38,8 +38,9 @@
 
 #include <stdint.h>
 #include "includes/arch/x86_64/io.h"
-#include "includes/klibc/stdio.h"
-#include "includes/util/serial.h"
+#include <stdio.h>
+#include "includes/util/serial.h" 
+#include <stdbool.h> //for the "are_interrupts_enabled" function
 
 uint8_t inb(uint16_t port) {
     uint8_t ret;
@@ -52,20 +53,32 @@ void outb(uint16_t port, uint8_t val) {
 }
 
 
-void enable_interrupts(){
-
-__asm__ volatile ("cli");
-kprintf("  [  OK  ] arch/x86_64/io.c: Successfully enabled interrupts\n");
-serial_write("[  OK  ] arch/x86_64/io.c: Successfully enabled interrupts\n", 62);
-
-
+bool are_interrupts_enabled(void) {
+    uint64_t flags;
+    __asm__ volatile("pushfq; pop %0" : "=r"(flags));
+    return (flags & (1 << 9)) != 0;  // Bit 9 is IF
 }
 
-void disable_interrupts(){
+void enable_interrupts() {
+    __asm__ volatile ("sti");
+    
+    if (are_interrupts_enabled()) {
+        kprintf("  [  OK  ] arch/x86_64/io.c: Successfully enabled interrupts\n");
+        serial_printf("[  OK  ] arch/x86_64/io.c: Successfully enabled interrupts\n");
+    } else {
+        kprintf("  [ FAIL ] arch/x86_64/io.c: Failed to enable interrupts\n");
+        serial_printf("[ FAIL ] arch/x86_64/io.c: Failed to enable interrupts\n");
+    }
+}
 
-__asm__ volatile ("sti");
-kprintf("   [  OK  ] arch/x86_64/io.c: Successfully disabled interrupts\n");
-serial_write("[  OK  ] arch/x86_64/io.c: Successfully disabled interrupts\n", 63);
-
-
+void disable_interrupts() {
+    __asm__ volatile ("cli");
+    
+    if (!are_interrupts_enabled()) {
+        kprintf("  [  OK  ] arch/x86_64/io.c: Successfully disabled interrupts\n");
+        serial_printf("[  OK  ] arch/x86_64/io.c: Successfully disabled interrupts\n");
+    } else {
+        kprintf("  [ FAIL ] arch/x86_64/io.c: Failed to disable interrupts\n");
+        serial_printf("[ FAIL ] arch/x86_64/io.c: Failed to disable interrupts\n");
+    }
 }

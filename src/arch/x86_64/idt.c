@@ -41,7 +41,7 @@
 
 #include "includes/arch/x86_64/idt.h"
 #include "includes/arch/x86_64/gdt.h"
-#include "includes/klibc/stdio.h"
+#include <stdio.h>
 #include <stdint.h>
 #include "includes/util/serial.h"
 
@@ -101,7 +101,7 @@ void IDT_Initialize() {
         IDTDescriptor_t current;
     __asm__ volatile("sidt %0" : "=m"(current));
 
-    // Compare CPU IDT with expected descriptor
+
     if (current.Ptr == (uint64_t)g_IDTDescriptor.Ptr &&
         current.Limit == g_IDTDescriptor.Limit) {
         kprintf("  [  OK  ] arch/x86_64/idt.c:  IDT initialized successfully\n");
@@ -111,5 +111,5 @@ void IDT_Initialize() {
         serial_write("[ FATAL ] arch/x86_64/gdt.c: Failed to initialize IDT, halting...\n", 68);
         halt(); 
     }
-
+//to the person that claims everything i make is AI, fuck off you piss baby.
 }

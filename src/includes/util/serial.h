@@ -18,10 +18,9 @@ extern "C" {
 #include <stdint.h>
 
 void serial_init(void);
-void serial_write(const char *msg, size_t len);
+void serial_write(const char *format, ...);
 void serial_putc(char c);
-
-#define nl_serial_write(str) serial_write(str, sizeof(str)-1)
+void serial_printf(const char *fmt, ...);
 
 #ifdef __cplusplus
 }

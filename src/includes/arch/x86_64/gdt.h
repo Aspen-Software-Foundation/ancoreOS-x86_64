@@ -44,4 +44,4 @@
 void GDT_Initialize();
 void halt_interrupts_enabled();
 void halt();
-#endif // GDT_H
+#endif
