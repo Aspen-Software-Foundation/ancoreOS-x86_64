@@ -1,0 +1,9 @@
+Version: dev-prototype
+
+    - Added documentation
+    - Added IDT, GDT, PMM, and interrupts
+    - Added serial printing
+    - Added a (in progress) klibc
+    - Improved I/O management
+
+More to come soon.
