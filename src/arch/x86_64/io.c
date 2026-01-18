@@ -63,10 +63,10 @@ void enable_interrupts(void) {
     __asm__ volatile ("sti");
     
     if (are_interrupts_enabled()) {
-        kprintf("  [  OK  ] arch/x86_64/io.c: Successfully enabled interrupts\n");
+        printf("  [  OK  ] arch/x86_64/io.c: Successfully enabled interrupts\n");
         serial_printf("[  OK  ] arch/x86_64/io.c: Successfully enabled interrupts\n");
     } else {
-        kprintf("  [ FAIL ] arch/x86_64/io.c: Failed to enable interrupts\n");
+        printf("  [ FAIL ] arch/x86_64/io.c: Failed to enable interrupts\n");
         serial_printf("[ FAIL ] arch/x86_64/io.c: Failed to enable interrupts\n");
     }
 }
@@ -75,10 +75,10 @@ void disable_interrupts() {
     __asm__ volatile ("cli");
     
     if (!are_interrupts_enabled()) {
-        kprintf("  [  OK  ] arch/x86_64/io.c: Successfully disabled interrupts\n");
+        printf("  [  OK  ] arch/x86_64/io.c: Successfully disabled interrupts\n");
         serial_printf("[  OK  ] arch/x86_64/io.c: Successfully disabled interrupts\n");
     } else {
-        kprintf("  [ FAIL ] arch/x86_64/io.c: Failed to disable interrupts\n");
+        printf("  [ FAIL ] arch/x86_64/io.c: Failed to disable interrupts\n");
         serial_printf("[ FAIL ] arch/x86_64/io.c: Failed to disable interrupts\n");
     }
 }

@@ -40,6 +40,8 @@
 #include "drivers/terminal/src/kfont.h"
 #include "arch/limine.h"
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "includes/util/serial.h"
 #include "includes/arch/x86_64/idt.h"
 #include "includes/arch/x86_64/gdt.h"
@@ -77,7 +79,6 @@ void kernel_main(void) {
     
 
     serial_init();
-    // optionally clear the screen
     cuoreterm_clear(&fb_term);
     writestr(&fb_term, "Welcome to the Ancore Operating System,\x1b[#FF0000m made by Aspen\x1b[0m\n", 68);
     serial_write("\nWelcome to the Ancore Operating System, made by Aspen\n", 57);
@@ -90,6 +91,56 @@ void kernel_main(void) {
     pmm_init();
     enable_interrupts();
     ISR_Initialize();
+
+
+    printf("\n=== testing malloc ===\n");
+    
+    // test 1: malloc
+    char* test1 = malloc(100);
+    if (test1 != NULL) {
+        printf("malloc(100) succeeded: %p\n", test1);
+        strcpy(test1, "Hello from malloc!");
+        printf("String in malloc'd memory: %s\n", test1);
+        free(test1);
+        printf("free() completed\n");
+    } else {
+        printf("malloc(100) failed!\n");
+    }
+    
+    // test 2: multiple allocations
+    int* numbers = malloc(10 * sizeof(int));
+    char* string = malloc(256);
+    void* big = malloc(4096);
+    
+    if (numbers && string && big) {
+        printf("Multiple allocations succeeded\n");
+        
+        for (int i = 0; i < 10; i++) {
+            numbers[i] = i * 10;
+        }
+        printf(" Array: [%d, %d, %d, %d, %d]\n", 
+                numbers[0], numbers[1], numbers[2], numbers[3], numbers[4]);
+        
+        free(numbers);
+        free(string);
+        free(big);
+        printf(" Freed all allocations\n");
+    } else {
+        printf(" Multiple allocations failed\n");
+    }
+    
+    // test 3: calloc
+    int* zeros = calloc(5, sizeof(int));
+    if (zeros) {
+        printf(" calloc succeeded\n");
+        printf(" Values: [%d, %d, %d, %d, %d]\n", 
+                zeros[0], zeros[1], zeros[2], zeros[3], zeros[4]);
+        free(zeros);
+    }
+    
+    
+    printf("=== malloc tests complete ===\n\n");
+
 
     while (1);
 }

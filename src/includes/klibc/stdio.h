@@ -63,7 +63,7 @@
  *
  * note: depends on terminal_putchar() and itoa() being defined elsewhere
  */
-void kprintf(const char *format, ...);
+void printf(const char *format, ...);
 struct terminal;
 void terminal_set_instance(struct terminal *term, uint32_t fg);
 

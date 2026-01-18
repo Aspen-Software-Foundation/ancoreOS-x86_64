@@ -12,7 +12,7 @@ static volatile struct limine_memmap_request memmap_request = {
     .revision = 3};
 
 __attribute__((used, section(".limine_requests"))) 
-static volatile struct limine_hhdm_request hhdm_request = {
+volatile struct limine_hhdm_request hhdm_request = {
     .id = LIMINE_HHDM_REQUEST_ID,
     .revision = 3};
 
@@ -44,7 +44,7 @@ struct limine_memmap_entry **entries = response->entries;
         }
     }
 
-    kprintf("  [  OK  ] drivers/memory/pmm.c: PMM initialized successfully\n");
+    printf("  [  OK  ] drivers/memory/pmm.c: PMM initialized successfully\n");
     serial_write("[  OK  ] drivers/memory/pmm.c: PMM initialized successfully\n", 61);
 }
 

@@ -104,10 +104,10 @@ void IDT_Initialize() {
 
     if (current.Ptr == (uint64_t)g_IDTDescriptor.Ptr &&
         current.Limit == g_IDTDescriptor.Limit) {
-        kprintf("  [  OK  ] arch/x86_64/idt.c:  IDT initialized successfully\n");
+        printf("  [  OK  ] arch/x86_64/idt.c:  IDT initialized successfully\n");
         serial_write("[  OK  ] arch/x86_64/idt.c: IDT initialized successfully\n", 58);
     } else {
-        kprintf(" [ FAIL ] arch/x86_64/idt.c: Failed to initialize IDT\n");
+        printf(" [ FAIL ] arch/x86_64/idt.c: Failed to initialize IDT\n");
         serial_write("[ FAIL ] arch/x86_64/idt.c: Failed to initialize IDT, halting...\n", 68);
         halt(); 
     }

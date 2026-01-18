@@ -8,7 +8,7 @@
 # If a copy of the MPL was not distributed with this file, You can obtain one at 
 # https://mozilla.org/MPL/2.0/.
 
-CFLAGS := -I src/ -ffreestanding -Wall -Wextra -Wunused-parameter -static -nostartfiles -nostdlib -fno-pie -no-pie -mno-red-zone -mcmodel=large -T linker.ld -I src/includes/ -I src/includes/klibc/ 
+CFLAGS := -I src/ -ffreestanding -Wall -Wextra -Wunused-parameter -static -nostartfiles -nostdlib -fno-pie -no-pie -mno-red-zone -mcmodel=large -T linker.ld -I src/includes/ -I src/includes/klibc/ -I src/drivers/memory/liballoc/ -D_ALLOC_SKIP_DEFINE
 QEMU_CPU ?=
 QEMU_MEM ?= -m 2G
 
@@ -30,9 +30,12 @@ kernel:
 	gcc -ffreestanding -c src/drivers/memory/pmm.c -o build/pmm.o $(CFLAGS)
 	gcc -ffreestanding -c src/arch/x86_64/isr.c -o build/isr.o $(CFLAGS)
 	gcc -ffreestanding -c src/arch/x86_64/isrs_gen.c -o build/isrs_gen.o $(CFLAGS)
+	gcc -ffreestanding -c src/drivers/memory/liballoc/liballoc.c -o build/liballoc.o $(CFLAGS) 
+	gcc -ffreestanding -c src/drivers/memory/liballoc-impl.c -o build/liballoc-impl.o $(CFLAGS)
+
 	nasm -f elf64 src/arch/x86_64/isr_stubs.asm -o build/isr_stubs.o
 
-	ld -T linker.ld -nostdlib -static -o build/kernel.elf build/kernel.o build/term.o build/stdio.o build/stdlib.o  build/serial.o  build/io.o build/idt.o build/gdt.o build/pmm.o build/isr.o build/isrs_gen.o build/isr_stubs.o build/string.o
+	ld -T linker.ld -nostdlib -static -o build/kernel.elf build/kernel.o build/term.o build/stdio.o build/stdlib.o  build/serial.o  build/io.o build/idt.o build/gdt.o build/pmm.o build/isr.o build/isrs_gen.o build/isr_stubs.o build/string.o build/liballoc.o build/liballoc-impl.o 
 build/uefi.img: kernel 
 	@printf ">>> Creating UEFI bootable image: $@\n"
 

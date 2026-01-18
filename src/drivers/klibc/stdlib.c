@@ -110,63 +110,6 @@ void exit(int status) {
 }
 
 
-//Author: Jerry Jhird
-//Source: https://codeberg.org/jerryjhird/CuoreOS/src/branch/master/src/libc/memory.c
-//License: MPLv2.0
-bool heap_can_alloc(size_t size) {
-    uintptr_t ptr = (uintptr_t)heap_ptr;
-    ptr = ALIGN_UP(ptr, 8);
-
-    if (ptr + size > (uintptr_t)heap_end)
-        return false;
-
-    return true;
-}
-
-
-void* malloc(size_t size) {
-    if (!heap_can_alloc(size))
-        return NULL;
-
-    uintptr_t ptr = (uintptr_t)heap_ptr;
-    ptr = ALIGN_UP(ptr, 8); // 8-byte alignment
-    if (ptr + size > (uintptr_t)heap_end) return NULL;
-
-    heap_ptr = (uint8_t*)(ptr + size);
-    return (void*)ptr;
-}
-
-void free(void* ptr) {
-    uintptr_t block = (uintptr_t)ptr;
-    
-    if (block == (uintptr_t)heap_ptr) {
-        heap_ptr = (uint8_t*)block;
-    }
-}
-//End Code Attribution
-
-
-
-
-void* calloc(size_t num, size_t size) {
-    size_t total = num * size;
-    void* ptr = malloc(total);
-    if (ptr) {
-        char* p = ptr;
-        for (size_t i = 0; i < total; i++) {
-            p[i] = 0;
-        }
-    }
-    return ptr;
-}
-
-void* realloc(void* ptr, size_t size) {
-    // TODO: Implement with heap allocator
-    (void)ptr;
-    (void)size;
-    return NULL;
-}
-
 int atoi(const char* str) {
     int result = 0;
     int sign = 1;
@@ -312,6 +255,7 @@ static void swap_bytes(char* a, char* b, size_t size) {
     }
 }
 
+//binary search 
 void* bsearch(const void* key, const void* base, size_t num, size_t size,
               int (*compar)(const void*, const void*)) {
     const char* pivot;
@@ -336,6 +280,7 @@ void* bsearch(const void* key, const void* base, size_t num, size_t size,
     return NULL;
 }
 
+//quick sort
 void qsort(void* base, size_t num, size_t size,
            int (*compar)(const void*, const void*)) {
     if (num < 2) return;

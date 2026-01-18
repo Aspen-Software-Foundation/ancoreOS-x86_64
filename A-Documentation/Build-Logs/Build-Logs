@@ -18,4 +18,7 @@ Version: dev-prototype
     - Added util.h
     - Removed stddef.h
     - Added stdint.h
+    - Added liballoc
+    - Improved memory manipulation functions
+    - Fixed improper limine definitions in pmm.c
 More to come soon.

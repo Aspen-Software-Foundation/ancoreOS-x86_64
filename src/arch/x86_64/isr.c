@@ -57,7 +57,7 @@ void ISR_Initialize() {
         IDT_EnableGate(i);
     }
 
-    kprintf("  [  OK  ] arch/x86_64/isr.c: ISR handlers initialized successfully.\n");
+    printf("  [  OK  ] arch/x86_64/isr.c: ISR handlers initialized successfully.\n");
     serial_printf("[  OK  ] arch/x86_64/isr.c: ISR handlers initialized successfully.\n", 70);
 }
 
@@ -66,40 +66,40 @@ void __attribute__((cdecl)) ISR_Handler(Registers_t *regs) {
         g_ISRHandlers[regs->interrupt](regs);
 
     } else if (regs->interrupt >= 32) {
-        kprintf("Unhandled interrupt %d!\n", regs->interrupt);
+        printf("Unhandled interrupt %d!\n", regs->interrupt);
         serial_printf("Unhandled interrupt %d!\n", regs->interrupt);
         
-        kprintf("  eax=%x  ebx=%x  ecx=%x  edx=%x  esi=%x  edi=%x\n",
+        printf("  eax=%x  ebx=%x  ecx=%x  edx=%x  esi=%x  edi=%x\n",
                regs->eax, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi);
         serial_printf("  eax=%x  ebx=%x  ecx=%x  edx=%x  esi=%x  edi=%x\n",
                regs->eax, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi);
 
-        kprintf("  esp=%x  ebp=%x  eip=%x  eflags=%x  cs=%x  ds=%x  ss=%x\n",
+        printf("  esp=%x  ebp=%x  eip=%x  eflags=%x  cs=%x  ds=%x  ss=%x\n",
                regs->esp, regs->ebp, regs->eip, regs->eflags, regs->cs, regs->ds, regs->ss);
         serial_printf("  esp=%x  ebp=%x  eip=%x  eflags=%x  cs=%x  ds=%x  ss=%x\n",
                regs->esp, regs->ebp, regs->eip, regs->eflags, regs->cs, regs->ds, regs->ss);
 
-        kprintf("  interrupt=%x  errorcode=%x\n", regs->interrupt, regs->error);
+        printf("  interrupt=%x  errorcode=%x\n", regs->interrupt, regs->error);
         serial_printf("  interrupt=%x  errorcode=%x\n", regs->interrupt, regs->error);
  
     } else {
-        kprintf("Unhandled exception %d: %s\n", regs->interrupt, g_Exceptions[regs->interrupt]);
+        printf("Unhandled exception %d: %s\n", regs->interrupt, g_Exceptions[regs->interrupt]);
         serial_printf("Unhandled exception %d: %s\n", regs->interrupt, g_Exceptions[regs->interrupt]);
         
-        kprintf("  eax=%x  ebx=%x  ecx=%x  edx=%x  esi=%x  edi=%x\n",
+        printf("  eax=%x  ebx=%x  ecx=%x  edx=%x  esi=%x  edi=%x\n",
                regs->eax, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi);
         serial_printf("  eax=%x  ebx=%x  ecx=%x  edx=%x  esi=%x  edi=%x\n",
                 regs->eax, regs->ebx, regs->ecx, regs->edx, regs->esi, regs->edi);
 
-        kprintf("  esp=%x  ebp=%x  eip=%x  eflags=%x  cs=%x  ds=%x  ss=%x\n",
+        printf("  esp=%x  ebp=%x  eip=%x  eflags=%x  cs=%x  ds=%x  ss=%x\n",
                regs->esp, regs->ebp, regs->eip, regs->eflags, regs->cs, regs->ds, regs->ss);
         serial_printf("  esp=%x  ebp=%x  eip=%x  eflags=%x  cs=%x  ds=%x  ss=%x\n",
                 regs->esp, regs->ebp, regs->eip, regs->eflags, regs->cs, regs->ds, regs->ss);
 
-        kprintf("  interrupt=%x  errorcode=%x\n", regs->interrupt, regs->error);
+        printf("  interrupt=%x  errorcode=%x\n", regs->interrupt, regs->error);
         serial_printf("  interrupt=%x  errorcode=%x\n", regs->interrupt, regs->error);
 
-        kprintf("KERNEL PANIC!\n");
+        printf("KERNEL PANIC!\n");
         serial_write("KERNEL PANIC!\n", 14);
         halt();
     }

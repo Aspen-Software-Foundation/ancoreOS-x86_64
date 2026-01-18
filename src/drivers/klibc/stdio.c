@@ -50,7 +50,7 @@ void terminal_set_instance(struct terminal *term, uint32_t fg) {
     global_fg = fg;
 }
 
-int kprintf(const char *format, ...) {
+int printf(const char *format, ...) {
     if (!global_term) return -1;
 
     va_list args;
