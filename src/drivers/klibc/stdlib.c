@@ -140,8 +140,7 @@ void free(void* ptr) {
     uintptr_t block = (uintptr_t)ptr;
     
     if (block == (uintptr_t)heap_ptr) {
-        // Simple free implementation: only frees if it's the last allocated block
-        // This is a stub implementation
+        heap_ptr = (uint8_t*)block;
     }
 }
 //End Code Attribution
