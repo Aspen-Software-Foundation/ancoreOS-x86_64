@@ -1,0 +1,895 @@
+ANCORE OPERATING SYSTEM - API DOCUMENTATION
+
+================================================================================
+OVERVIEW
+================================================================================
+
+This document provides a comprehensive reference of all public APIs available 
+in the Ancore Operating System kernel.
+
+
+================================================================================
+TABLE OF CONTENTS
+================================================================================
+
+1. Standard I/O (stdio)
+2. Standard Library (stdlib)
+3. String Operations (string)
+4. Memory Management (PMM & liballoc)
+5. Serial Communication
+6. Architecture Specific - x86_64
+   - GDT (Global Descriptor Table)
+   - IDT (Interrupt Descriptor Table)
+   - ISR (Interrupt Service Routines)
+   - I/O Operations
+7. Bootloader Integration (Limine)
+8. Terminal/Display
+9. Utility Macros
+
+
+================================================================================
+STANDARD I/O (stdio)
+================================================================================
+
+Function: printf
+  Signature: void printf(const char *format, ...);
+  
+  Description: Formatted output to terminal with various format specifiers.
+  
+  Parameters:
+    - format: Format string with specifiers
+    - ...: Variable arguments
+  
+  Supported Format Specifiers:
+    %d  - Signed decimal integer
+    %u  - Unsigned decimal integer
+    %x  - Hexadecimal integer
+    %o  - Octal integer
+    %f  - Floating point (6 decimal places)
+    %s  - Null-terminated string
+    %c  - Character
+    %p  - Pointer (hexadecimal with 0x prefix)
+    %m  - Memory (raw memory bytes)
+  
+  Padding:
+    %Nd   - Pad with spaces to N width
+    %0Nd  - Pad with zeros to N width
+  
+  Returns: None
+
+
+Function: terminal_set_instance
+  Signature: void terminal_set_instance(struct terminal *term, uint32_t fg);
+  
+  Description: Sets the active terminal instance and foreground color.
+  
+  Parameters:
+    - term: Pointer to terminal structure
+    - fg: Foreground color in RGB format (0xRRGGBB)
+  
+  Returns: None
+
+
+================================================================================
+STANDARD LIBRARY (stdlib)
+================================================================================
+
+Function: malloc
+  Signature: void* malloc(size_t size);
+  
+  Description: Allocates memory of the specified size.
+  
+  Parameters:
+    - size: Number of bytes to allocate
+  
+  Returns: Pointer to allocated memory, or NULL on failure
+
+
+Function: free
+  Signature: void free(void* ptr);
+  
+  Description: Frees previously allocated memory.
+  
+  Parameters:
+    - ptr: Pointer to memory to free
+  
+  Returns: None
+
+
+Function: calloc
+  Signature: void* calloc(size_t num, size_t size);
+  
+  Description: Allocates and zeros memory for an array of elements.
+  
+  Parameters:
+    - num: Number of elements
+    - size: Size of each element
+  
+  Returns: Pointer to allocated and zeroed memory, or NULL on failure
+
+
+Function: realloc
+  Signature: void* realloc(void* ptr, size_t size);
+  
+  Description: Resizes previously allocated memory block.
+  
+  Parameters:
+    - ptr: Pointer to previous allocation
+    - size: New size in bytes
+  
+  Returns: Pointer to resized memory, or NULL on failure
+
+
+Function: atoi
+  Signature: int atoi(const char* str);
+  
+  Description: Converts string to integer.
+  
+  Parameters:
+    - str: String to convert
+  
+  Returns: Integer value
+
+
+Function: atol
+  Signature: long atol(const char* str);
+  
+  Description: Converts string to long integer.
+  
+  Parameters:
+    - str: String to convert
+  
+  Returns: Long integer value
+
+
+Function: atoll
+  Signature: long long atoll(const char* str);
+  
+  Description: Converts string to long long integer.
+  
+  Parameters:
+    - str: String to convert
+  
+  Returns: Long long integer value
+
+
+Function: strtol
+  Signature: long strtol(const char* str, char** endptr, int base);
+  
+  Description: Converts string to long integer with base specification.
+  
+  Parameters:
+    - str: String to convert
+    - endptr: Pointer to end of conversion
+    - base: Number base (2-36)
+  
+  Returns: Long integer value
+
+
+Function: strtoul
+  Signature: unsigned long strtoul(const char* str, char** endptr, int base);
+  
+  Description: Converts string to unsigned long integer.
+  
+  Parameters:
+    - str: String to convert
+    - endptr: Pointer to end of conversion
+    - base: Number base (2-36)
+  
+  Returns: Unsigned long integer value
+
+
+Function: strtoll
+  Signature: long long strtoll(const char* str, char** endptr, int base);
+  
+  Description: Converts string to long long integer.
+  
+  Parameters:
+    - str: String to convert
+    - endptr: Pointer to end of conversion
+    - base: Number base (2-36)
+  
+  Returns: Long long integer value
+
+
+Function: strtoull
+  Signature: unsigned long long strtoull(const char* str, char** endptr, int base);
+  
+  Description: Converts string to unsigned long long integer.
+  
+  Parameters:
+    - str: String to convert
+    - endptr: Pointer to end of conversion
+    - base: Number base (2-36)
+  
+  Returns: Unsigned long long integer value
+
+
+Function: itoa
+  Signature: void *itoa(int32_t value, char *str, uint32_t base);
+  
+  Description: Converts integer to string.
+  
+  Parameters:
+    - value: Integer value to convert
+    - str: Buffer for string result
+    - base: Number base (typically 10 for decimal, 16 for hex)
+  
+  Returns: Pointer to string
+
+
+Function: bsearch
+  Signature: void* bsearch(const void* key, const void* base, size_t num, 
+                          size_t size,
+                          int (*compar)(const void*, const void*));
+  
+  Description: Binary search in sorted array.
+  
+  Parameters:
+    - key: Element to search for
+    - base: Pointer to array
+    - num: Number of elements
+    - size: Size of each element
+    - compar: Comparison function
+  
+  Returns: Pointer to found element or NULL
+
+
+Function: qsort
+  Signature: void qsort(void* base, size_t num, size_t size,
+                       int (*compar)(const void*, const void*));
+  
+  Description: Quick sort array in place.
+  
+  Parameters:
+    - base: Pointer to array
+    - num: Number of elements
+    - size: Size of each element
+    - compar: Comparison function
+  
+  Returns: None
+
+
+================================================================================
+STRING OPERATIONS (string)
+================================================================================
+
+Function: memset
+  Signature: void* memset(void* ptr, int value, size_t num);
+  
+  Description: Fills memory with a constant byte.
+  
+  Parameters:
+    - ptr: Pointer to memory
+    - value: Byte value to fill
+    - num: Number of bytes
+  
+  Returns: Pointer to memory
+
+
+Function: memcpy
+  Signature: void* memcpy(void* dest, const void* src, size_t n);
+  
+  Description: Copies memory from source to destination.
+  
+  Parameters:
+    - dest: Destination pointer
+    - src: Source pointer
+    - n: Number of bytes to copy
+  
+  Returns: Pointer to destination
+
+
+Function: memcmp
+  Signature: int memcmp(const void* ptr1, const void* ptr2, size_t n);
+  
+  Description: Compares memory regions.
+  
+  Parameters:
+    - ptr1: First memory pointer
+    - ptr2: Second memory pointer
+    - n: Number of bytes to compare
+  
+  Returns: 0 if equal, negative if ptr1 < ptr2, positive if ptr1 > ptr2
+
+
+Function: memmove
+  Signature: void* memmove(void* dst, const void* src, size_t n);
+  
+  Description: Moves memory (handles overlapping regions).
+  
+  Parameters:
+    - dst: Destination pointer
+    - src: Source pointer
+    - n: Number of bytes to move
+  
+  Returns: Pointer to destination
+
+
+Function: strlen
+  Signature: size_t strlen(const char* str);
+  
+  Description: Gets length of string.
+  
+  Parameters:
+    - str: Null-terminated string
+  
+  Returns: Length without null terminator
+
+
+Function: strcmp
+  Signature: int strcmp(const char* str1, const char* str2);
+  
+  Description: Compares two strings.
+  
+  Parameters:
+    - str1: First string
+    - str2: Second string
+  
+  Returns: 0 if equal, negative if str1 < str2, positive if str1 > str2
+
+
+Function: strncmp
+  Signature: int strncmp(const char* str1, const char* str2, size_t n);
+  
+  Description: Compares first n characters of two strings.
+  
+  Parameters:
+    - str1: First string
+    - str2: Second string
+    - n: Number of characters to compare
+  
+  Returns: 0 if equal, negative if str1 < str2, positive if str1 > str2
+
+
+Function: strcpy
+  Signature: char* strcpy(char* dest, const char* src);
+  
+  Description: Copies string (unsafe - use strlcpy).
+  
+  Parameters:
+    - dest: Destination buffer
+    - src: Source string
+  
+  Returns: Pointer to destination
+
+
+Function: strlcpy
+  Signature: size_t strlcpy(char* dst, const char* src, size_t n);
+  
+  Description: Copies string safely with size limit.
+  
+  Parameters:
+    - dst: Destination buffer
+    - src: Source string
+    - n: Size of destination buffer
+  
+  Returns: Length of source string
+
+
+Function: strcat
+  Signature: char* strcat(char* dest, const char* src);
+  
+  Description: Concatenates strings (unsafe).
+  
+  Parameters:
+    - dest: Destination string buffer
+    - src: String to append
+  
+  Returns: Pointer to destination
+
+
+Function: strncat
+  Signature: char* strncat(char* dest, const char* src, size_t n);
+  
+  Description: Concatenates strings with limit.
+  
+  Parameters:
+    - dest: Destination string buffer
+    - src: String to append
+    - n: Maximum characters to append
+  
+  Returns: Pointer to destination
+
+
+Function: strlcat
+  Signature: size_t strlcat(char* dst, const char* src, size_t size);
+  
+  Description: Concatenates strings safely.
+  
+  Parameters:
+    - dst: Destination buffer
+    - src: String to append
+    - size: Size of destination buffer
+  
+  Returns: Total length that would have been concatenated
+
+
+Function: strchr
+  Signature: const char* strchr(const char* str, char chr);
+  
+  Description: Finds character in string.
+  
+  Parameters:
+    - str: String to search
+    - chr: Character to find
+  
+  Returns: Pointer to character or NULL if not found
+
+
+================================================================================
+MEMORY MANAGEMENT (PMM & liballoc)
+================================================================================
+
+Function: pmm_init
+  Signature: void pmm_init(void);
+  
+  Description: Initializes the Physical Memory Manager.
+  
+  Parameters: None
+  
+  Returns: None
+  
+  Note: Must be called before any memory allocation.
+
+
+Function: palloc
+  Signature: uint64_t palloc(void);
+  
+  Description: Allocates a physical page.
+  
+  Parameters: None
+  
+  Returns: Physical address of allocated page, or 0 on failure
+
+
+Function: pfree
+  Signature: void pfree(uint64_t phys_addr);
+  
+  Description: Frees a physical page.
+  
+  Parameters:
+    - phys_addr: Physical address of page to free
+  
+  Returns: None
+
+
+Function: liballoc_alloc
+  Signature: void* liballoc_alloc(int pages);
+  
+  Description: Allocates physical pages and returns virtual address in HHDM.
+  
+  Parameters:
+    - pages: Number of pages to allocate
+  
+  Returns: Virtual address in HHDM, or NULL on failure
+  
+  Note: Internal function called by malloc/calloc
+
+
+Function: liballoc_free
+  Signature: int liballoc_free(void* ptr, int pages);
+  
+  Description: Frees allocated pages.
+  
+  Parameters:
+    - ptr: Virtual address to free
+    - pages: Number of pages to free
+  
+  Returns: 0 on success, -1 on failure
+  
+  Note: Internal function called by free
+
+
+Function: liballoc_lock
+  Signature: int liballoc_lock(void);
+  
+  Description: Locks memory allocator (disables interrupts).
+  
+  Parameters: None
+  
+  Returns: 0 on success
+  
+  Note: Internal function
+
+
+Function: liballoc_unlock
+  Signature: int liballoc_unlock(void);
+  
+  Description: Unlocks memory allocator (enables interrupts).
+  
+  Parameters: None
+  
+  Returns: 0 on success
+  
+  Note: Internal function
+
+
+================================================================================
+SERIAL COMMUNICATION
+================================================================================
+
+Function: serial_init
+  Signature: void serial_init(void);
+  
+  Description: Initializes serial port (COM1 by default).
+  
+  Parameters: None
+  
+  Returns: None
+
+
+Function: serial_write
+  Signature: void serial_write(const char *format, ...);
+  
+  Description: Writes formatted output to serial port.
+  
+  Parameters:
+    - format: Format string with specifiers
+    - ...: Variable arguments
+  
+  Returns: None
+
+
+Function: serial_putc
+  Signature: void serial_putc(char c);
+  
+  Description: Writes single character to serial port.
+  
+  Parameters:
+    - c: Character to write
+  
+  Returns: None
+
+
+Function: serial_printf
+  Signature: void serial_printf(const char *fmt, ...);
+  
+  Description: Formatted output to serial port.
+  
+  Parameters:
+    - fmt: Format string
+    - ...: Variable arguments
+  
+  Returns: None
+
+
+================================================================================
+ARCHITECTURE SPECIFIC - x86_64
+================================================================================
+
+--- GDT (Global Descriptor Table) ---
+
+Function: GDT_Initialize
+  Signature: void GDT_Initialize(void);
+  
+  Description: Initializes the Global Descriptor Table.
+  
+  Parameters: None
+  
+  Returns: None
+  
+  Note: Must be called early in kernel initialization.
+
+
+Constants:
+  GDT_CODE_SEGMENT  0x08    Kernel code segment selector
+  GDT_DATA_SEGMENT  0x10    Kernel data segment selector
+
+
+Function: halt
+  Signature: void halt(void);
+  
+  Description: Halts the processor.
+  
+  Parameters: None
+  
+  Returns: None (infinite loop with hlt instruction)
+
+
+Function: halt_interrupts_enabled
+  Signature: void halt_interrupts_enabled(void);
+  
+  Description: Halts processor with interrupts enabled.
+  
+  Parameters: None
+  
+  Returns: None
+
+
+--- IDT (Interrupt Descriptor Table) ---
+
+Function: IDT_Initialize
+  Signature: void IDT_Initialize(void);
+  
+  Description: Initializes the Interrupt Descriptor Table.
+  
+  Parameters: None
+  
+  Returns: None
+
+
+Function: IDT_DisableGate
+  Signature: void IDT_DisableGate(int interrupt);
+  
+  Description: Disables an interrupt gate.
+  
+  Parameters:
+    - interrupt: Interrupt number (0-255)
+  
+  Returns: None
+
+
+Function: IDT_EnableGate
+  Signature: void IDT_EnableGate(int interrupt);
+  
+  Description: Enables an interrupt gate.
+  
+  Parameters:
+    - interrupt: Interrupt number (0-255)
+  
+  Returns: None
+
+
+Function: IDT_SetGate
+  Signature: void IDT_SetGate(int interrupt, void *base, 
+                             uint16_t segmentDescriptor, uint8_t flags);
+  
+  Description: Sets up an interrupt gate descriptor.
+  
+  Parameters:
+    - interrupt: Interrupt number (0-255)
+    - base: Address of interrupt handler
+    - segmentDescriptor: Code segment selector
+    - flags: IDT flags (ring level, gate type, etc.)
+  
+  Returns: None
+
+
+IDT_FLAGS_t Enum Values:
+  IDT_FLAG_GATE_TASK              0x5
+  IDT_FLAG_GATE_16BIT_INT         0x6
+  IDT_FLAG_GATE_16BIT_TRAP        0x7
+  IDT_FLAG_GATE_32BIT_INT         0xE
+  IDT_FLAG_GATE_32BIT_TRAP        0xF
+  IDT_FLAG_RING0                  (0 << 5)
+  IDT_FLAG_RING1                  (1 << 5)
+  IDT_FLAG_RING2                  (2 << 5)
+  IDT_FLAG_RING3                  (3 << 5)
+  IDT_FLAG_PRESENT                0x80
+
+
+--- ISR (Interrupt Service Routines) ---
+
+Function: ISR_Initialize
+  Signature: void ISR_Initialize(void);
+  
+  Description: Initializes all Interrupt Service Routines.
+  
+  Parameters: None
+  
+  Returns: None
+
+
+Function: ISR_Handler
+  Signature: void ISR_Handler(Registers_t *regs);
+  
+  Description: Main interrupt handler called by ISR stubs.
+  
+  Parameters:
+    - regs: Pointer to saved CPU registers
+  
+  Returns: None
+  
+  Note: Called from assembly stubs (ISR0-ISR255)
+
+
+--- I/O Operations ---
+
+Function: inb
+  Signature: uint8_t inb(uint16_t port);
+  
+  Description: Reads byte from I/O port.
+  
+  Parameters:
+    - port: I/O port number
+  
+  Returns: Byte value from port
+
+
+Function: outb
+  Signature: void outb(uint16_t port, uint8_t val);
+  
+  Description: Writes byte to I/O port.
+  
+  Parameters:
+    - port: I/O port number
+    - val: Byte value to write
+  
+  Returns: None
+
+
+Function: hcf (Halt and Catch Fire)
+  Signature: static inline void hcf(void);
+  
+  Description: Infinite loop with halt instruction.
+  
+  Parameters: None
+  
+  Returns: None
+
+
+Macro: enable_interrupts
+  Definition: __asm__ volatile("sti")
+  
+  Description: Enables CPU interrupts via STI instruction.
+
+
+Macro: disable_interrupts
+  Definition: __asm__ volatile("cli")
+  
+  Description: Disables CPU interrupts via CLI instruction.
+
+
+================================================================================
+BOOTLOADER INTEGRATION (Limine)
+================================================================================
+
+The kernel uses Limine bootloader protocol for UEFI boot. Key requests include:
+
+  Framebuffer Request   - Access to graphics framebuffer
+  Memory Map Request    - Physical memory layout
+  HHDM Request          - Higher Half Direct Map offset
+  Module Request        - Loaded modules
+  Entry Point Request   - Kernel entry point
+
+See src/arch/limine.h for full Limine protocol definitions.
+
+
+================================================================================
+TERMINAL/DISPLAY
+================================================================================
+
+Function: cuoreterm_init
+  Signature: void cuoreterm_init(
+               struct terminal *term,
+               void *fb_addr,
+               uint32_t width,
+               uint32_t height,
+               uint32_t pitch,
+               uint32_t bpp,
+               uint8_t red_shift,
+               uint8_t green_shift,
+               uint8_t blue_shift,
+               uint8_t red_size,
+               uint8_t green_size,
+               uint8_t blue_size,
+               void *font,
+               uint8_t font_width,
+               uint8_t font_height);
+  
+  Description: Initializes terminal/display driver.
+  
+  Parameters:
+    - term: Terminal structure to initialize
+    - fb_addr: Framebuffer virtual address
+    - width: Screen width in pixels
+    - height: Screen height in pixels
+    - pitch: Scanline pitch in bytes
+    - bpp: Bits per pixel
+    - red_shift, green_shift, blue_shift: Color component bit shifts
+    - red_size, green_size, blue_size: Color component bit widths
+    - font: Pointer to PSF font data
+    - font_width: Font character width
+    - font_height: Font character height
+  
+  Returns: None
+
+
+Function: cuoreterm_clear
+  Signature: void cuoreterm_clear(struct terminal *term);
+  
+  Description: Clears terminal screen.
+  
+  Parameters:
+    - term: Terminal structure
+  
+  Returns: None
+
+
+Function: writestr
+  Signature: void writestr(struct terminal *term, const char *str, size_t len);
+  
+  Description: Writes string to terminal with ANSI escape code support.
+  
+  Parameters:
+    - term: Terminal structure
+    - str: String to write
+    - len: Length of string
+  
+  Returns: None
+  
+  Note: Supports ANSI escape codes like \x1b[#RRGGBBm for colors.
+
+
+================================================================================
+UTILITY MACROS
+================================================================================
+
+Memory Alignment:
+  ALIGN_UP(address, alignment)    
+    Aligns address up to alignment boundary
+  
+  ALIGN_DOWN(address, alignment)  
+    Aligns address down to alignment boundary
+  
+  PAGE_SIZE  4096
+    Default memory page size
+
+
+MIN/MAX:
+  MIN(_x, _y)  Returns minimum of two values
+  MAX(_x, _y)  Returns maximum of two values
+
+
+Bit Operations:
+  FLAG_SET(x, flag)    Set flag bits (x |= flag)
+  FLAG_UNSET(x, flag)  Clear flag bits (x &= ~flag)
+  BIT_SET(_v, _n, _x)  Set specific bit to value
+  HIBIT(_x)            Get highest set bit
+  LOBIT(_x)            Get lowest set bit
+
+
+Other Utilities:
+  unlikely(x)          Branch hint to compiler (expect false)
+  CLAMP(_x, _mi, _ma)  Clamp value between min and max
+  PACKED               Attribute for packed structures
+
+
+================================================================================
+TYPE DEFINITIONS
+================================================================================
+
+Vector Types:
+  uint8_Vector2_t   struct { uint8_t x; uint8_t y; }
+  uint16_Vector2_t  struct { uint16_t x; uint16_t y; }
+  uint8_Vector3_t   struct { uint8_t x; uint8_t y; uint8_t z; }
+  uint16_Vector3_t  struct { uint16_t x; uint16_t y; uint16_t z; }
+
+
+Color Type:
+  color_t  struct { uint8_t r; uint8_t g; uint8_t b; }
+
+
+Linked List:
+  list_t  struct { struct list_t *next; struct list_t *prev; }
+  
+  list_init(list_t *list)
+    Initialize linked list
+  
+  list_last(list_t *list)
+    Get last element or NULL
+  
+  list_next(list_t *list)
+    Get next element or NULL
+
+
+================================================================================
+NOTES
+================================================================================
+
+- All APIs are C-compatible and follow x86_64 calling conventions
+- Memory allocation functions are backed by liballoc with physical memory 
+  from PMM
+- Interrupt handling is fully functional with 256 interrupt vectors
+- Serial output is available for debugging
+- Terminal output supports ANSI escape codes for colored text
+
+
+================================================================================
+DOCUMENTATION INFORMATION
+================================================================================
+
+Documentation Version: 1.0
+Last Updated: 2026-01-18
+Kernel Version: dev-prototype (Early Development)
