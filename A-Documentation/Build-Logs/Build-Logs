@@ -33,4 +33,8 @@ Version: dev-prototype
     - Improved PMM to display free, used, and total
     - Small tweaks to klibc
     - Added sys/types.h, assert.h, errno.h, and readded stddef.h
+    - Added birdsay to shell commands
+    - Added storage and filesystem support
+    - Improved makefile
+    - Added time (a little)
     More to come soon.

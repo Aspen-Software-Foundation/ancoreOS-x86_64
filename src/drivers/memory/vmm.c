@@ -51,11 +51,11 @@ extern volatile struct limine_hhdm_request hhdm_request;
 uint64_t hhdm_offset;
 static uint64_t *kernel_pml4;
 
-static inline void *phys_to_virt(uint64_t phys) {
+void *phys_to_virt(uint64_t phys) {
     return (void *)(phys + hhdm_offset);
 }
 
-static inline uint64_t virt_to_phys(void *virt) {
+ uint64_t virt_to_phys(void *virt) {
     return (uint64_t)virt - hhdm_offset;
 }
 
@@ -131,4 +131,30 @@ void unmap_page(uint64_t virt) {
     pt[PT_INDEX(virt)] = 0;
 
     asm volatile ("invlpg (%0)" :: "r"(virt) : "memory");
+}
+
+void phys_flush_cache(void *addr, uint64_t size)
+{
+    uintptr_t p = (uintptr_t)addr & ~63ULL;
+    uintptr_t end = (uintptr_t)addr + size;
+
+    while (p < end) {
+        __asm__ volatile ("clflush (%0)" :: "r"(p));
+        p += 64;
+    }
+
+    __asm__ volatile ("mfence");
+}
+
+void phys_invalidate_cache(void *addr, uint64_t size)
+{
+    uintptr_t p = (uintptr_t)addr & ~63ULL;
+    uintptr_t end = (uintptr_t)addr + size;
+
+    while (p < end) {
+        __asm__ volatile ("clflush (%0)" :: "r"(p));
+        p += 64;
+    }
+
+    __asm__ volatile ("mfence");
 }

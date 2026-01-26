@@ -1,8 +1,8 @@
 /*
     Copyright (C) 2026 Aspen Software Foundation
 
-    Module: vmm.h
-    Description: The virtual memory manager for the VNiX Operating System.
+    Module: time.h
+    Description: The time module for the VNiX Operating System.
     Author: Yazin Tantawi
 
     All components of the VNiX Operating System, except where otherwise noted, 
@@ -36,38 +36,10 @@
  * MA 02110-1301, USA.
 */
 
-#ifndef VMM_H
-#define VMM_H
 
-#include <stdint.h>
+#ifndef TIME_H
+#define TIME_H
 
-extern volatile struct limine_hhdm_request hhdm_request;
+void udelay(uint64_t us);
 
-extern uint64_t hhdm_offset;
-
-void vmm_init(void);
-
-#define PTE_PRESENT  (1ULL << 0)
-#define PTE_WRITABLE (1ULL << 1)
-#define PTE_USER     (1ULL << 2)
-#define PTE_NOEXEC   (1ULL << 63)
-#define PTE_PWT       0x8     // Page-level write-through
-#define PTE_PCD       0x10    // Page-level cache disable
-#define PTE_ACCESSED  0x20    // Set by CPU on access
-#define PTE_DIRTY     0x40    // Set by CPU on write
-#define PTE_HUGE      0x80    // Huge page (2MB or 1GB)
-#define PTE_GLOBAL    0x100
-
-
-#define PML4_INDEX(x) (((x) >> 39) & 0x1FF)
-#define PDPT_INDEX(x) (((x) >> 30) & 0x1FF)
-#define PD_INDEX(x)   (((x) >> 21) & 0x1FF)
-#define PT_INDEX(x)   (((x) >> 12) & 0x1FF)
-inline uint64_t virt_to_phys(void *virt);
-void *phys_to_virt(uint64_t phys);
-inline void phys_invalidate_cache(void *addr, uint64_t size);
-void map_page(uint64_t virt, uint64_t phys, uint64_t flags);
-
-void unmap_page(uint64_t virt);
-void phys_flush_cache(void *addr, uint64_t size);
-#endif // VMM_H
+#endif

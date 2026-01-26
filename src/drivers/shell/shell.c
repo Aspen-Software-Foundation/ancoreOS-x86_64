@@ -43,17 +43,33 @@
 #include <stdio.h>
 #include "includes/memory/pmm.h"
 #include "includes/arch/x86_64/isr.h"
+#include <stdlib.h>
+
+typedef enum {
+    SHCMD_HELP,
+    SHCMD_ECHO,
+    SHCMD_CLEAR,
+    SHCMD_PMMSTATS,
+    SHCMD_PANIC,
+    SHCMD_BIRDSAY,
+    SHCMD_UNKNOWN
+} shell_command_t;
+
+shell_command_t get_command(const char *buffer) {
+    if (strcmp(buffer, "help") == 0) return SHCMD_HELP;
+    if (strcmp(buffer, "echo") == 0) return SHCMD_ECHO;
+    if (strcmp(buffer, "clear") == 0) return SHCMD_CLEAR;
+    if (strcmp(buffer, "pmmstats") == 0) return SHCMD_PMMSTATS;
+    if (strcmp(buffer, "panic") == 0) return SHCMD_PANIC;
+    if (strcmp(buffer, "birdsay") == 0) return SHCMD_BIRDSAY;
+
+    return SHCMD_UNKNOWN;
+}
+
 
 
 extern struct terminal fb_term;
 
-static int shell_strcmp(const char* s1, const char* s2) {
-    while (*s1 && (*s1 == *s2)) {
-        s1++;
-        s2++;
-    }
-    return *(unsigned char*)s1 - *(unsigned char*)s2;
-}
 
 void print_string(const char* str) {
     printf("%s", str);
@@ -64,18 +80,16 @@ void print_char(char c) {
 }
 
 void cmd_help(void) {
-    print_string("Available commands:\n");
-    print_string("  help  - Show this help\n");
-    print_string("  echo  - Echo arguments\n");
-    print_string("  clear - Clear screen\n");
-    print_string("  pmmstats - Gets the PMM stats\n");
-    print_string("  panic    - Calls a kernel panic\n");
+    printf("Available commands:\n");
+    printf("  help  - Show this help\n");
+    printf("  echo  - Echo arguments\n");
+    printf("  clear - Clear screen\n");
+    printf("  pmmstats - Gets the PMM stats\n");
+    printf("  panic    - Calls a kernel panic\n");
+    printf("  birdsay  - Cowsay, but with a bird\n");
 }
 
-void cmd_echo(const char* args) {
-    print_string(args);
-    print_char('\n');
-}
+
 
 void cmd_clear(void) {
     cuoreterm_clear(&fb_term);
@@ -115,32 +129,57 @@ if (*buffer == '\0') return;
         while (*args == ' ') args++;
         has_args = (*args != '\0');
     }
-    
-    // execute commands that are built in
-if (shell_strcmp(buffer, "help") == 0) {
+
+
+
+    switch (get_command(buffer)) {
+
+    case SHCMD_HELP:
         cmd_help();
-    } else if (shell_strcmp(buffer, "echo") == 0) {
+        break;
+
+    case SHCMD_ECHO:
         if (has_args) {
-            cmd_echo(args);
+            print_string(args);
+            printf("\n");
         } else {
             print_char('\n');
         }
-    } else if (shell_strcmp(buffer, "clear") == 0) {
+        break;
+
+    case SHCMD_CLEAR:
         cmd_clear();
-    }
-    else if (shell_strcmp(buffer, "pmmstats") == 0)
-    {
+        break;
+
+    case SHCMD_PMMSTATS:
         pmmstats();
-    }
-    else if (shell_strcmp(buffer, "panic") == 0){
+        break;
+
+    case SHCMD_PANIC:
         panic();
-    }
-     
-    else {
-        print_string("Unknown command: ");
+        break;
+
+    case SHCMD_BIRDSAY:
+        if (has_args) {
+            printf("   \\\\\n");
+            printf("   (o>\n");
+            printf("\\\\_//)\n");
+            printf(" \\_/_)\n");
+            printf("  _|_  ----> ");
+            print_string(args);
+            print_char('\n');
+        } else {
+            print_char('\n');
+        }
+        break;
+
+    default:
+        printf("Unknown command: ");
         print_string(buffer);
-        print_string("\nType 'help' for available commands.\n");
-    }
+        printf("\nType 'help' for available commands.\n");
+        break;
+}
+
 }
 
 //loop

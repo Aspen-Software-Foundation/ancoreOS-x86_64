@@ -7,7 +7,7 @@
 
     All components of the VNiX Operating System, except where otherwise noted, 
     are copyright of the Aspen Software Foundation (and the corresponding author(s)) and licensed under GPLv2 or later.
-    For more information on the Gnu Public License Version 2, please refer to the LICENSE file
+    For more information on the GNU Public License Version 2, please refer to the LICENSE file
     or to the link provided here: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
  * THIS OPERATING SYSTEM IS PROVIDED "AS IS" AND "AS AVAILABLE" UNDER 
@@ -37,8 +37,7 @@
 */
 
 //A Note from the Aspen team: Please excuse us for the horrors you may find in this OS.
-
-//Kernel Revision 3A, 
+//Kernel Revision 3A, playfully named the "Popcorn Kernel" (unoffically)
 
 #include "drivers/terminal/src/cuoreterm.h"
 #include "drivers/terminal/src/kfont.h"
@@ -57,7 +56,7 @@
 #include "includes/pic/apic/apic_irq.h"
 #include "includes/shell/keyboard.h"
 #include "includes/shell/shell.h"
-
+#include "includes/storage/stinit.h"
 
 static volatile struct limine_framebuffer_request fb_req = {
     .id = LIMINE_FRAMEBUFFER_REQUEST_ID,
@@ -115,10 +114,10 @@ void kernel_main(void) {
     serial_init();
     cuoreterm_clear(&fb_term);
     writestr(&fb_term, "Welcome to the VNiX Operating System,\x1b[#FF0000m made by Aspen\x1b[0m\n", 68);
-    serial_write("\nWelcome to the VNiX Operating System, made by Aspen\n", 57);
+    serial_write("\nWelcome to the VNiX Operating System, made by Aspen\n", 55);
 
-    writestr(&fb_term, "\x1b[#7300FFm  [ debug ]\x1b[0m Successfully initalized kernel\n", 58);
-    SERIAL(Ok, kernel_main, "Successfully initalized kernel\n");
+    LOG(Debug, kernel_main, "Succesfully initialized kernel\n");
+    SERIAL(Debug, kernel_main, "Successfully initalized kernel\n");
 
     GDT_Initialize();
     IDT_Initialize();
@@ -128,7 +127,7 @@ void kernel_main(void) {
     ISR_Initialize();
     APIC_IRQ_Initialize();
     keyboard_apic_init();
-    
+    storage_init();
 
     void vmm_test_mapping(void) {
     uint64_t virt = 0x1000000000;  // idfk virtual address

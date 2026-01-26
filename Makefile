@@ -66,7 +66,13 @@ kernel:
 	gcc -ffreestanding -c src/drivers/pic/apic/apic.c -o build/apic.o $(CFLAGS)
 	gcc -ffreestanding -c src/drivers/pic/apic/apic_irq.c -o build/apic_irq.o $(CFLAGS)
 	gcc -ffreestanding -c src/drivers/shell/keyboard.c -o build/keyboard.o $(CFLAGS)
+	gcc -ffreestanding -c src/drivers/storage/storage.c -o build/storage.o $(CFLAGS)
+	gcc -ffreestanding -c src/drivers/storage/sata.c -o build/storage.o $(CFLAGS)
 	gcc -ffreestanding -c src/drivers/shell/shell.c -o build/shell.o $(CFLAGS)
+	gcc -ffreestanding -c src/drivers/time/time.c -o build/time.o $(CFLAGS)
+	gcc -ffreestanding -c src/drivers/storage/ata.c -o build/ata.o $(CFLAGS)
+	gcc -ffreestanding -c src/drivers/storage/stinit.c -o build/stinit.o $(CFLAGS)
+	gcc -ffreestanding -c src/drivers/storage/atapi.c -o build/atapi.o $(CFLAGS)
 	nasm -f elf64 src/arch/x86_64/isr_stubs.asm -o build/isr_stubs.o
 
 # After much research, i've concluded on this linking order because it looks much better than the hellish alternative i initially had
@@ -94,7 +100,12 @@ kernel:
 		build/apic.o \
 		build/apic_irq.o \
 		build/keyboard.o \
-		build/shell.o
+		build/shell.o \
+		build/storage.o \
+		build/time.o \
+		build/ata.o\
+		build/atapi.o \
+		build/stinit.o
 	objcopy --strip-debug build/kernel.elf
 
 
@@ -114,7 +125,7 @@ build/uefi-usb.img: kernel
 	echo "BOOTX64.EFI" >> build/usb_root/startup.nsh
 	
 	@echo "Creating FAT32 image..."
-	dd if=/dev/zero of=build/VNiX-uefi_dev-prototype.img bs=1M count=64
+	dd if=/dev/zero of=build/VNiX-uefi_dev-prototype.img bs=1080K count=64
 	mkfs.fat -F 32 build/VNiX-uefi_dev-prototype.img 2>/dev/null || sudo mkfs.fat -F 32 build/VNiX-uefi_dev-prototype.img
 
 # I decided to add a little interactive box because why not?

@@ -42,6 +42,7 @@
 #define NULL ((void*)0)
 typedef unsigned long size_t;
 typedef long ptrdiff_t;
+typedef long ssize_t;
 #define PTRDIFF_MIN        INT64_MIN
 #define PTRDIFF_MAX        INT64_MAX
 #define SIZE_MAX           UINT64_MAX

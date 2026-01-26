@@ -62,6 +62,8 @@ const char* strchr(const char* str, char chr);
 void strswap(char* str, char char1, char char2);
 uint32_t strcount(char* str, char char1);
 int memcmp_const(const void* ptr1, uint8_t val, size_t n);
-
+char *strstr(const char *haystack, const char *needle);
+char *strtok(char *str, const char *delim);
+int ipow(int base, int exp);
 
 #endif /* _STRING_H */

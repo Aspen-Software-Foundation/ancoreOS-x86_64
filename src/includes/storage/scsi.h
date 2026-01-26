@@ -1,9 +1,9 @@
 /*
     Copyright (C) 2026 Aspen Software Foundation
 
-    Module: vmm.h
-    Description: The virtual memory manager for the VNiX Operating System.
-    Author: Yazin Tantawi
+    Module: scsi.h
+    Description: SCSI module for the VNiX Operating System.
+    Author: Mejd Almohammedi
 
     All components of the VNiX Operating System, except where otherwise noted, 
     are copyright of the Aspen Software Foundation (and the corresponding author(s)) and licensed under GPLv2 or later.
@@ -35,39 +35,41 @@
  * FOUNDATION, INC., 51 FRANKLIN STREET, FIFTH FLOOR, BOSTON,
  * MA 02110-1301, USA.
 */
-
-#ifndef VMM_H
-#define VMM_H
+#ifndef SCSIUTILS_H
+#define SCSIUTILS_H
 
 #include <stdint.h>
-
-extern volatile struct limine_hhdm_request hhdm_request;
-
-extern uint64_t hhdm_offset;
-
-void vmm_init(void);
-
-#define PTE_PRESENT  (1ULL << 0)
-#define PTE_WRITABLE (1ULL << 1)
-#define PTE_USER     (1ULL << 2)
-#define PTE_NOEXEC   (1ULL << 63)
-#define PTE_PWT       0x8     // Page-level write-through
-#define PTE_PCD       0x10    // Page-level cache disable
-#define PTE_ACCESSED  0x20    // Set by CPU on access
-#define PTE_DIRTY     0x40    // Set by CPU on write
-#define PTE_HUGE      0x80    // Huge page (2MB or 1GB)
-#define PTE_GLOBAL    0x100
+#include <stddef.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include "util/util.h"
 
 
-#define PML4_INDEX(x) (((x) >> 39) & 0x1FF)
-#define PDPT_INDEX(x) (((x) >> 30) & 0x1FF)
-#define PD_INDEX(x)   (((x) >> 21) & 0x1FF)
-#define PT_INDEX(x)   (((x) >> 12) & 0x1FF)
-inline uint64_t virt_to_phys(void *virt);
-void *phys_to_virt(uint64_t phys);
-inline void phys_invalidate_cache(void *addr, uint64_t size);
-void map_page(uint64_t virt, uint64_t phys, uint64_t flags);
+typedef struct {
+    uint32_t last_lba;
+    uint32_t sector_size;
+} read10_capabillity_buffer_t;
 
-void unmap_page(uint64_t virt);
-void phys_flush_cache(void *addr, uint64_t size);
-#endif // VMM_H
+
+
+static inline void build_read_capacity_atapi_cmd(uint8_t *cmd) {
+    memset(cmd, 0, 10);
+    cmd[0] = 0x25; // READ CAPACITY(10)
+}
+
+
+static inline void build_read10_atapi_cmd(uint8_t *cmd, uint32_t lba, uint16_t sector_count) {
+    memset(cmd, 0, 12);
+    cmd[0] = 0x28;                     // READ(10) opcode
+    cmd[2] = (lba >> 24) & 0xFF;
+    cmd[3] = (lba >> 16) & 0xFF;
+    cmd[4] = (lba >> 8) & 0xFF;
+    cmd[5] = lba & 0xFF;
+    cmd[7] = (sector_count >> 8) & 0xFF;
+    cmd[8] = sector_count & 0xFF;
+}
+
+
+
+
+#endif // SCSIUTILS_H
