@@ -44,9 +44,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include "includes/arch/x86_64/io.h"
-#include "includes/util/log-info.h"
-
-void terminal_set_instance(struct terminal *term, uint32_t fg);
+#include "util/includes/log-info.h"
 
 #define FLAG_SET(var, mask)   ((var) |= (mask))
 #define FLAG_UNSET(var, mask) ((var) &= ~(mask))

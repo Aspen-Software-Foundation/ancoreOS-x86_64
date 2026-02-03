@@ -39,9 +39,9 @@
 #include <stdint.h>
 #include "includes/arch/x86_64/io.h"
 #include <stdio.h>
-#include "includes/util/serial.h" 
+#include "util/includes/serial.h" 
 #include <stdbool.h> //for the "are_interrupts_enabled" function
-#include "includes/util/log-info.h"
+#include "util/includes/log-info.h"
 
 void halt(void) {
     uint64_t rip;

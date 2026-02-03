@@ -50,8 +50,8 @@
 #include "includes/pic/pic.h"
 #include "includes/pic/apic/apic.h"
 #include "includes/arch/x86_64/io.h"
-#include "includes/util/log-info.h"
-#include "includes/util/util.h"
+#include "util/includes/log-info.h"
+#include "util/includes/util.h"
 
 #define KEYBOARD_IRQ_VECTOR         1
 #define KEYBOARD_INTERRUPT_VECTOR   0x21

@@ -36,8 +36,11 @@
  * MA 02110-1301, USA.
 */
 
-#include "includes/util/log-info.h"
+#include "includes/log-info.h"
 #include <stdarg.h>
+
+extern struct flanterm_context *global_flanterm;
+
 const char* result_str[ResultCount] = {
     [Ok]    = "OK",
     [Warn]  = "WARN",
@@ -47,15 +50,16 @@ const char* result_str[ResultCount] = {
 };
 
 void log_to_terminal(result_t status, const char *from, const char *file, int line, const char *fmt, ...) {
-    //build msg
+    if (!global_flanterm) return;
+    
+    // build msg
     char message[512];
     char *ptr = message;
     
-    //add the fun part, the color
+    // color
     const char *color = get_status_color(status);
     while (*color) *ptr++ = *color++;
-    
-    //this i so i dont forget: this is how spacing is introduced:
+
     *ptr++ = '[';
     *ptr++ = ' ';
     *ptr++ = ' ';
@@ -66,14 +70,13 @@ void log_to_terminal(result_t status, const char *from, const char *file, int li
     *ptr++ = ' ';
     *ptr++ = ' ';
     *ptr++ = ']';
-    //=================================
-
-    // this resets color so the entire terminal isnt one color or the other
+    
+    // reset col
     const char *reset = COLOR_RESET;
     while (*reset) *ptr++ = *reset++;
     *ptr++ = ' ';
     
-    //fn name and location
+    // fn and location
     while (*from) *ptr++ = *from++;
     
     *ptr++ = ' ';
@@ -81,7 +84,7 @@ void log_to_terminal(result_t status, const char *from, const char *file, int li
     *ptr++ = 'n';
     *ptr++ = ' ';
     
-    //full path/file name
+    // file name
     const char *file_ptr = file;
     while (*file_ptr) *ptr++ = *file_ptr++;
 
@@ -95,7 +98,7 @@ void log_to_terminal(result_t status, const char *from, const char *file, int li
     *ptr++ = 'e';
     *ptr++ = ' ';
     
-    //ln number
+    // ln num
     char line_str[16];
     itoa(line, line_str, 10);
     const char *line_ptr = line_str;
@@ -104,7 +107,7 @@ void log_to_terminal(result_t status, const char *from, const char *file, int li
     *ptr++ = ':';
     *ptr++ = ' ';
     
-    //js the formatted message
+    // process formatted message
     va_list args;
     va_start(args, fmt);
     
@@ -125,7 +128,12 @@ void log_to_terminal(result_t status, const char *from, const char *file, int li
                 while (*num_ptr) *ptr++ = *num_ptr++;
             } else if (*fmt == 's') {
                 char *str = va_arg(args, char*);
-                while (*str) *ptr++ = *str++;
+                if (str) {
+                    while (*str) *ptr++ = *str++;
+                } else {
+                    const char *null_str = "(null)";
+                    while (*null_str) *ptr++ = *null_str++;
+                }
             } else if (*fmt == 'p') {
                 void *p = va_arg(args, void*);
                 *ptr++ = '0';
@@ -152,7 +160,9 @@ void log_to_terminal(result_t status, const char *from, const char *file, int li
         if (*fmt) fmt++;
     }
     va_end(args);
-    
+
     *ptr = '\0';
-    writestr(&fb_term, message, ptr - message);
+    
+    // write to flanterm
+    flanterm_write(global_flanterm, message, ptr - message);
 }

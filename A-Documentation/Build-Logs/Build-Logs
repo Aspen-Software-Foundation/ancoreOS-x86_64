@@ -38,5 +38,6 @@ Version: dev-prototype
     - Improved makefile
     - Added time (a little)
     - Added USB support
+    - Changed terminal to flanterm, removed uneeded files, improved makefile, and changed directory structure.
     
     More to come soon.

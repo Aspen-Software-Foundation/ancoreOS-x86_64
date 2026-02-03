@@ -43,9 +43,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "includes/arch/x86_64/io.h"
-#include "includes/util/log-info.h"
+#include "util/includes/log-info.h"
 
-void terminal_set_instance(struct terminal *term, uint32_t fg);
 
 
 typedef struct {

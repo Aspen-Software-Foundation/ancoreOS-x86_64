@@ -42,12 +42,14 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "string.h"
-#include "arch/x86_64/gdt.h"
+//#include "arch/x86_64/gdt.h"
 
 
 void *itoa(int32_t value, char *str, uint32_t base);
 void* malloc(size_t size);
 void free(void* ptr);
+void* calloc(size_t nmemb, size_t size);
+void* realloc(void* ptr, size_t size);
 int atoi(const char* str);
 long atol(const char* str);
 long long atoll(const char* str);
@@ -57,7 +59,6 @@ long strtol(const char* str, char** endptr, int base);
 unsigned long strtoul(const char* str, char** endptr, int base);
 long long strtoll(const char* str, char** endptr, int base);
 unsigned long long strtoull(const char* str, char** endptr, int base);
-void* calloc(size_t num, size_t size);
 
 void* bsearch(const void* key, const void* base, size_t num, size_t size,
               int (*compar)(const void*, const void*));

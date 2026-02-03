@@ -42,12 +42,38 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include "drivers/memory/heapalloc/tlsf.h"
 
 #define ALIGN_UP(x, a) (((x) + (uintptr_t)((a)-1)) & ~((uintptr_t)((a)-1)))
 
 uint8_t* heap_ptr = (uint8_t*)0x100000;  
 uint8_t* heap_end = (uint8_t*)0x200000;
 
+
+extern tlsf_t kernel_tlsf; // global TLSF instance
+
+void* malloc(size_t size) {
+    return tlsf_malloc(kernel_tlsf, size);
+}
+
+void free(void* ptr) {
+    tlsf_free(kernel_tlsf, ptr);
+}
+
+void* calloc(size_t nmemb, size_t size) {
+    size_t total = nmemb * size;
+    void* ptr = malloc(total);
+    if (ptr) {
+        unsigned char* p = ptr;
+        for (size_t i = 0; i < total; ++i)
+            p[i] = 0;
+    }
+    return ptr;
+}
+
+void* realloc(void* ptr, size_t size) {
+    return tlsf_realloc(kernel_tlsf, ptr, size);
+}
 
 uint8_t *memset_pattern(void *ptr, const void *pattern, size_t pattern_size, size_t num) {
     uint8_t *p = (uint8_t *)ptr;

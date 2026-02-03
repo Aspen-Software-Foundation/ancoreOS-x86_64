@@ -7,7 +7,7 @@
 
     All components of the VNiX Operating System, except where otherwise noted, 
     are copyright of the Aspen Software Foundation (and the corresponding author(s)) and licensed under GPLv2 or later.
-    For more information on the GNU Public License Version 2, please refer to the LICENSE file
+    For more information on the Gnu Public License Version 2, please refer to the LICENSE file
     or to the link provided here: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 
  * THIS OPERATING SYSTEM IS PROVIDED "AS IS" AND "AS AVAILABLE" UNDER 
@@ -36,101 +36,100 @@
  * MA 02110-1301, USA.
 */
 
-//A Note from the Aspen team: Please excuse us for the horrors you may find in this OS.
-//Kernel Revision 3A, playfully named the "Popcorn Kernel" (unoffically)
-
-#include "drivers/terminal/src/cuoreterm.h"
-#include "drivers/terminal/src/kfont.h"
-#include "arch/limine.h"
+#include "../../limine/limine.h"
+#include "drivers/terminal/src/flanterm.h"
+#include "drivers/terminal/src/flanterm_backends/fb.h"
+#include "drivers/memory/heapalloc/tlsf.h"
 #include <stdio.h>
+#include "drivers/terminal/src/flanterm.h"
 #include <string.h>
 #include <stdlib.h>
-#include "includes/util/serial.h"
+#include "util/includes/serial.h"
 #include "includes/arch/x86_64/idt.h"
 #include "includes/arch/x86_64/gdt.h"
 #include "includes/arch/x86_64/isr.h"
 #include "includes/memory/pmm.h"
 #include "includes/memory/vmm.h"
-#include "includes/util/log-info.h"
+#include "util/includes/log-info.h"
 #include "includes/pic/apic/apic.h"
 #include "includes/pic/apic/apic_irq.h"
 #include "includes/shell/keyboard.h"
 #include "includes/shell/shell.h"
 #include "includes/storage/stinit.h"
 
+// IMPORTANT: Define the global flanterm context that printf uses
+extern struct flanterm_context *global_flanterm;
+
+void __assert_fail(const char *expr, const char *file, int line, const char *func) {
+    (void)expr;
+    (void)file;
+    (void)line;
+    (void)func;
+}
+
 static volatile struct limine_framebuffer_request fb_req = {
     .id = LIMINE_FRAMEBUFFER_REQUEST_ID,
     .revision = 0
 };
 
-struct terminal fb_term;
+#define KERNEL_HEAP_SIZE 0x100000
+static unsigned char kernel_heap[KERNEL_HEAP_SIZE] __attribute__((aligned(8)));
+tlsf_t kernel_tlsf;
 
-/*
-uint32_t crc32c_swhash(const char *s)
-{
-    const uint32_t poly = 0x82F63B78;
-    uint32_t crc = 0;
 
-    while (*s) {
-        uint32_t c = (uint8_t)*s++;
-        crc ^= c;
-
-        for (int i = 0; i < 8; i++) {
-            crc = (crc >> 1) ^ (poly & -(crc & 1));
-        }
-    }
-
-    return crc;
+void init_heap() {
+    kernel_tlsf = tlsf_create_with_pool(kernel_heap, KERNEL_HEAP_SIZE);
+    printf("%sWelcome to the VNiX Operating System, made by%s %sAspen%s\n", 
+       COLOR_CYAN, COLOR_RESET, COLOR_RED, COLOR_RESET);
+    LOG(Debug, init_heap, "Heap initialized at %p\n", kernel_heap);
+    SERIAL(Debug, init_heap, "Heap initialized at %p\n", kernel_heap);
 }
-
-dont mind this guys
-
-*/ 
-
 
 void kernel_main(void) {
     struct limine_framebuffer *fb = fb_req.response->framebuffers[0];
-    terminal_set_instance(&fb_term, 0xFFFFFF);
-
-    cuoreterm_init(
-         &fb_term,
-         (void *)fb->address,
-         (uint32_t)fb->width,
-         (uint32_t)fb->height,
-         (uint32_t)fb->pitch,
-         (uint32_t)fb->bpp,
-         fb->red_mask_shift,
-         fb->green_mask_shift,
-         fb->blue_mask_shift,
-         fb->red_mask_size,
-         fb->green_mask_size,
-         fb->blue_mask_size,
-         15, // scroll 2 rows at once (faster)
-         iso10_f14_psf, // font we provide for you in kfont.h but can be any psf1 font
-         8, // font width
-         14 // font height
+    
+    // Initialize flanterm and assign to GLOBAL variable
+    global_flanterm = flanterm_fb_init(
+        NULL,                    // malloc function
+        NULL,                    // free function
+        fb->address,             // framebuffer address
+        fb->width,               // width
+        fb->height,              // height
+        fb->pitch,               // pitch
+        fb->red_mask_size,       // red_mask_size
+        fb->red_mask_shift,      // red_mask_shift
+        fb->green_mask_size,     // green_mask_size
+        fb->green_mask_shift,    // green_mask_shift
+        fb->blue_mask_size,      // blue_mask_size
+        fb->blue_mask_shift,     // blue_mask_shift
+        NULL,                    // canvas
+        NULL,                    // ansi_colours
+        NULL,                    // ansi_bright_colours
+        NULL,                    // background
+        NULL,                    // background_bright
+        NULL,                    // font
+        NULL,                    // font_width
+        NULL,                    // font_height
+        0,                       // font_spacing
+        0,                       // font_scale_x
+        1,                       // font_scale_y
+        0,                       // margin
+        0,                       // margin_gradient
+        0,                       // default_bg
+        0xFFFFFF                 // default_fg (white text)
     );
-
-
-    serial_init();
-    cuoreterm_clear(&fb_term);
-    writestr(&fb_term, "Welcome to the VNiX Operating System,\x1b[#FF0000m made by Aspen\x1b[0m\n", 68);
-    serial_write("\nWelcome to the VNiX Operating System, made by Aspen\n", 55);
-
-    LOG(Debug, kernel_main, "Succesfully initialized kernel\n");
-    SERIAL(Debug, kernel_main, "Successfully initalized kernel\n");
-
+    
+    init_heap();
     GDT_Initialize();
     IDT_Initialize();
     vmm_init();
     pmm_init();
     enable_interrupts();
     ISR_Initialize();
-    APIC_IRQ_Initialize();
+        APIC_IRQ_Initialize();
     keyboard_apic_init();
     storage_init();
-
-    void vmm_test_mapping(void) {
+        void vmm_test_mapping(void) {
     uint64_t virt = 0x1000000000;  // idfk virtual address
     uint64_t phys = 0x200000;      // idfk physical address
 
@@ -246,9 +245,7 @@ vmm_test_unmap();
 
     printf("=== malloc tests complete ===\n\n");
     serial_write("=== malloc tests complete ===\n\n", 33);
-
     shell_main();
 
     while (1);
-    
 }

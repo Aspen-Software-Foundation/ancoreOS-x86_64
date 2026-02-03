@@ -42,7 +42,7 @@
 #include "includes/arch/x86_64/idt.h"
 #include "includes/arch/x86_64/isr.h"
 #include "includes/arch/x86_64/io.h"
-#include "includes/util/log-info.h"
+#include "util/includes/log-info.h"
 
 volatile uint32_t* apic_base = (volatile uint32_t*)APIC_BASE;
 volatile uint32_t* apic_io_base = (volatile uint32_t*)APIC_IO_BASE;

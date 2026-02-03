@@ -40,80 +40,66 @@
 #define LOG_INFO_H
 
 #include "serial.h"
-#include "drivers/terminal/src/cuoreterm.h"
+#include "drivers/terminal/src/flanterm.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
 
-extern struct terminal fb_term;
-
 typedef enum result_t {
-    Ok,        //green
-    Warn,      //yellow
-    Error,     //light red
-    Fatal,     //dark red
-    Debug, // borple
+    Ok,        // green
+    Warn,      // yellow
+    Error,     // light red
+    Fatal,     // dark red
+    Debug,     // purple
     ResultCount
 } result_t;
 
 extern const char* result_str[ResultCount];
 
-#define COLOR_BLACK    "\x1b[#000000m"
-#define COLOR_RED      "\x1b[#FF0000m"
-#define COLOR_GREEN    "\x1b[#00FF00m"
-#define COLOR_YELLOW   "\x1b[#FFFF00m"
-#define COLOR_BLUE     "\x1b[#0000FFm"
-#define COLOR_MAGENTA  "\x1b[#FF00FFm"
-#define COLOR_CYAN     "\x1b[#00FFFFm"
-#define COLOR_WHITE    "\x1b[#FFFFFFm"
-#define COLOR_GRAY     "\x1b[#808080m"
-#define COLOR_LIGHTRED    "\x1b[#FF6666m"
-#define COLOR_LIGHTGREEN  "\x1b[#66FF66m"
-#define COLOR_LIGHTYELLOW "\x1b[#FFFF66m"
-#define COLOR_LIGHTBLUE   "\x1b[#6666FFm"
-#define COLOR_LIGHTCYAN   "\x1b[#66FFFFm"
-#define COLOR_LIGHTGRAY   "\x1b[#C0C0C0m"
-#define COLOR_DARKRED     "\x1b[#CC0000m"  // for FATAL
-#define COLOR_PURPLE      "\x1b[#7300FFm"
-#define COLOR_RESET       "\x1b[0m"
+// Standard ANSI color codes that Flanterm supports
+#define COLOR_BLACK         "\033[30m"
+#define COLOR_RED           "\033[31m"
+#define COLOR_GREEN         "\033[32m"
+#define COLOR_YELLOW        "\033[33m"
+#define COLOR_BLUE          "\033[34m"
+#define COLOR_MAGENTA       "\033[35m"
+#define COLOR_CYAN          "\033[36m"
+#define COLOR_WHITE         "\033[37m"
+#define COLOR_GRAY          "\033[90m"
+#define COLOR_LIGHTRED      "\033[91m"
+#define COLOR_LIGHTGREEN    "\033[92m"
+#define COLOR_LIGHTYELLOW   "\033[93m"
+#define COLOR_LIGHTBLUE     "\033[94m"
+#define COLOR_LIGHTMAGENTA  "\033[95m"
+#define COLOR_LIGHTCYAN     "\033[96m"
+#define COLOR_LIGHTGRAY     "\033[97m"
+
+// Background colors (if needed)
+#define COLOR_BG_BLACK      "\033[40m"
+#define COLOR_BG_RED        "\033[41m"
+#define COLOR_BG_GREEN      "\033[42m"
+#define COLOR_BG_YELLOW     "\033[43m"
+
+// Text styles
+#define COLOR_BOLD          "\033[1m"
+#define COLOR_DIM           "\033[2m"
+#define COLOR_UNDERLINE     "\033[4m"
+#define COLOR_BLINK         "\033[5m"
+#define COLOR_REVERSE       "\033[7m"
+
+#define COLOR_RESET         "\033[0m"
 
 static inline const char* get_status_color(result_t status) {
     switch (status) {
         case Ok:    return COLOR_GREEN;
         case Warn:  return COLOR_YELLOW;
         case Error: return COLOR_LIGHTRED;
-        case Fatal: return COLOR_DARKRED;
-        case Debug: return COLOR_PURPLE;
+        case Fatal: return COLOR_BOLD COLOR_RED;  // Bold red for fatal
+        case Debug: return COLOR_MAGENTA;
         default:    return COLOR_RESET;
     }
 }
-
-static inline void write_color(struct terminal *term, const char *color, const char *msg) {
-    writestr(term, color, strlen(color));
-    writestr(term, msg, strlen(msg));
-    writestr(term, COLOR_RESET, strlen(COLOR_RESET));
-}
-
-static inline void color_print(const char *color, const char *fmt, ...) {
-    char buffer[256];
-    va_list args;
-    printf("%s", color);
-    
-    va_start(args, fmt);
-    printf("%s %d %c %d", buffer, sizeof(buffer), fmt, args);
-    va_end(args);
-    
-    printf("%s", buffer);
-    printf("%s", COLOR_RESET);
-}
-
-#define COLORED_MSG(term, color, msg) \
-    do { \
-        writestr(term, color, strlen(color)); \
-        writestr(term, msg, strlen(msg)); \
-        writestr(term, COLOR_RESET, strlen(COLOR_RESET)); \
-    } while(0)
 
 void log_to_terminal(result_t status, const char *from, const char *file, int line, const char *fmt, ...);
 

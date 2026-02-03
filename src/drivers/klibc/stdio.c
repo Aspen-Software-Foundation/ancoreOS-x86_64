@@ -37,29 +37,23 @@
 */
 
 #include <stdlib.h>
-#include "drivers/terminal/src/cuoreterm.h"
+#include "drivers/terminal/src/flanterm.h"
 #include <stdint.h>
 #include <stddef.h>
 #include <stdarg.h>
 
-
-static struct terminal *global_term = NULL;
-static uint32_t global_fg = 0xFFFFFF;
-
-void terminal_set_instance(struct terminal *term, uint32_t fg) {
-    global_term = term;
-    global_fg = fg;
-}
+// Global flanterm context (should be set in kernel_main)
+struct flanterm_context *global_flanterm = NULL;
 
 int printf(const char *format, ...) {
-    if (!global_term) return -1;
+    if (!global_flanterm) return -1;
 
     va_list args;
     va_start(args, format);
 
-    uint32_t c;
+    char c;
     char buf[64];
-    char *p = NULL, *p2 = NULL;
+    char *p = NULL;
     int pad = 0;
     char pad_char = ' ';
     int chars_written = 0;
@@ -69,7 +63,7 @@ int printf(const char *format, ...) {
         pad_char = ' ';
 
         if (c != '%') {
-            cuoreterm_draw_char(global_term, c, global_fg);
+            flanterm_write(global_flanterm, &c, 1);
             chars_written++;
             continue;
         }
@@ -102,6 +96,7 @@ int printf(const char *format, ...) {
         }
 
         c = *format++;
+        p = NULL;
 
         switch (c) {
             case 'd':
@@ -110,79 +105,27 @@ int printf(const char *format, ...) {
             case 'o': {
                 if (is_longlong) {
                     uint64_t val = va_arg(args, uint64_t);
-                    // Manual hex conversion for 64-bit
                     if (c == 'x') {
-                        cuoreterm_draw_char(global_term, '0', global_fg);
-                        cuoreterm_draw_char(global_term, 'x', global_fg);
+                        flanterm_write(global_flanterm, "0x", 2);
                         chars_written += 2;
-                        char hex_buf[17];
-                        int idx = 0;
-                        if (val == 0) {
-                            hex_buf[idx++] = '0';
-                        } else {
-                            uint64_t temp = val;
-                            int num_digits = 0;
-                            while (temp > 0) {
-                                num_digits++;
-                                temp /= 16;
-                            }
-                            temp = val;
-                            for (int i = num_digits - 1; i >= 0; i--) {
-                                int digit = (temp >> (i * 4)) & 0xF;
-                                hex_buf[idx++] = (digit < 10) ? ('0' + digit) : ('a' + digit - 10);
-                            }
-                        }
-                        hex_buf[idx] = '\0';
-                        p = hex_buf;
-                        // Copy to buffer to preserve it
-                        char *src = hex_buf;
-                        int j = 0;
-                        while (*src && j < 63) {
-                            buf[j++] = *src++;
-                        }
-                        buf[j] = '\0';
-                        p = buf;
-                    } else {
-                        itoa((int)val, buf, (c == 'o') ? 8 : 10);
-                        p = buf;
                     }
+                    itoa(val, buf, (c == 'x') ? 16 : (c == 'o') ? 8 : 10);
+                    p = buf;
                 } else if (is_long) {
-                    uint64_t val = va_arg(args, long);
+                    long val = va_arg(args, long);
                     if (c == 'x') {
-                        char hex_buf[17];
-                        int idx = 0;
-                        if (val == 0) {
-                            hex_buf[idx++] = '0';
-                        } else {
-                            uint64_t temp = val;
-                            int num_digits = 0;
-                            while (temp > 0) {
-                                num_digits++;
-                                temp /= 16;
-                            }
-                            temp = val;
-                            for (int i = num_digits - 1; i >= 0; i--) {
-                                int digit = (temp >> (i * 4)) & 0xF;
-                                hex_buf[idx++] = (digit < 10) ? ('0' + digit) : ('a' + digit - 10);
-                            }
-                        }
-                        hex_buf[idx] = '\0';
-                        char *src = hex_buf;
-                        int j = 0;
-                        while (*src && j < 63) {
-                            buf[j++] = *src++;
-                        }
-                        buf[j] = '\0';
-                        p = buf;
-                    } else {
-                        itoa((long)val, buf, (c == 'o') ? 8 : 10);
-                        p = buf;
+                        flanterm_write(global_flanterm, "0x", 2);
+                        chars_written += 2;
                     }
+                    itoa(val, buf, (c == 'x') ? 16 : (c == 'o') ? 8 : 10);
+                    p = buf;
                 } else {
+                    int val = va_arg(args, int);
                     if (c == 'x') {
+                        flanterm_write(global_flanterm, "0x", 2);
+                        chars_written += 2;
                     }
-                    itoa(va_arg(args, int), buf,
-                         (c == 'x') ? 16 : (c == 'o') ? 8 : 10);
+                    itoa(val, buf, (c == 'x') ? 16 : (c == 'o') ? 8 : 10);
                     p = buf;
                 }
                 break;
@@ -193,18 +136,26 @@ int printf(const char *format, ...) {
                 int int_part = (int)fval;
                 double frac = fval - int_part;
                 itoa(int_part, buf, 10);
-                p = buf;
-                while (*p) {
-                    cuoreterm_draw_char(global_term, *p++, global_fg);
+                
+                // Write integer part
+                char *temp = buf;
+                while (*temp) {
+                    flanterm_write(global_flanterm, temp, 1);
+                    temp++;
                     chars_written++;
                 }
-                cuoreterm_draw_char(global_term, '.', global_fg);
+                
+                // Write decimal point
+                flanterm_write(global_flanterm, ".", 1);
                 chars_written++;
-                frac *= 1000000; // 6 decimal places
+                
+                // Write fractional part
+                frac *= 1000000;
                 itoa((int)frac, buf, 10);
-                p = buf;
-                while (*p) {
-                    cuoreterm_draw_char(global_term, *p++, global_fg);
+                temp = buf;
+                while (*temp) {
+                    flanterm_write(global_flanterm, temp, 1);
+                    temp++;
                     chars_written++;
                 }
                 continue;
@@ -215,44 +166,57 @@ int printf(const char *format, ...) {
                 if (!p) p = "(null)";
                 break;
 
-            case 'c':
-                cuoreterm_draw_char(global_term, va_arg(args, int), global_fg);
+            case 'c': {
+                char ch = (char)va_arg(args, int);
+                flanterm_write(global_flanterm, &ch, 1);
                 chars_written++;
                 continue;
+            }
 
             case 'p':
-                itoa((uintptr_t)va_arg(args, void *), buf, 16);
-                cuoreterm_draw_char(global_term, '0', global_fg);
-                cuoreterm_draw_char(global_term, 'x', global_fg);
+                flanterm_write(global_flanterm, "0x", 2);
                 chars_written += 2;
+                itoa((uintptr_t)va_arg(args, void *), buf, 16);
                 p = buf;
                 break;
 
-            case 'm': // memory
-                p = va_arg(args, char *);
-                if (!p) p = "(null)";
-                for (size_t i = 0; i < (size_t)(pad ? pad : 16); i++) {
-                    cuoreterm_draw_char(global_term, p[i], global_fg);
+            case 'm': {
+                char *mem = va_arg(args, char *);
+                if (!mem) mem = "(null)";
+                int len = pad ? pad : 16;
+                for (int i = 0; i < len; i++) {
+                    flanterm_write(global_flanterm, &mem[i], 1);
                     chars_written++;
                 }
                 continue;
+            }
 
-            default:
-                cuoreterm_draw_char(global_term, c, global_fg);
+            default: {
+                flanterm_write(global_flanterm, &c, 1);
                 chars_written++;
                 continue;
+            }
         }
 
-        // print with padding
-        int len = 0;
-        for (p2 = p; *p2; p2++) len++;
-        for (int i = len; i < pad; i++) {
-            cuoreterm_draw_char(global_term, pad_char, global_fg);
-            chars_written++;
-        }
-        while (*p) {
-            cuoreterm_draw_char(global_term, *p++, global_fg);
-            chars_written++;
+        // If we have a string to print (p is set)
+        if (p) {
+            // Calculate length
+            int len = 0;
+            char *p2 = p;
+            while (*p2++) len++;
+            
+            // Print padding
+            for (int i = len; i < pad; i++) {
+                flanterm_write(global_flanterm, &pad_char, 1);
+                chars_written++;
+            }
+            
+            // Print the string
+            while (*p) {
+                flanterm_write(global_flanterm, p, 1);
+                p++;
+                chars_written++;
+            }
         }
     }
 

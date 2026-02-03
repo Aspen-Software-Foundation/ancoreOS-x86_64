@@ -20,14 +20,12 @@ Preface:
 
 3 - Core features
 
-    Currently, the VNiX Operating System uses Cuoreterm for its terminal. Cuoreterm is a super lightweight and freestanding terminal made by JerryJhird for CuoreOS. 
+    Currently, the VNiX Operating System uses Flanterm for its terminal, as it is feature rich and includes better scrolling and color handling.
     VNiX also features RISCV32 program support, made by Dcraftbg. For more information about either one of these project, visit the links below:
     This OS also features the Limine Bootloader, because of its extensive features and ease of use. I personally support its goals and achievements, which is why
     I've included it in this project.
 
     Links:                v v v
-    CuoreOS: https://codeberg.org/jerryjhird/CuoreOS
-    Cuoreterm: https://codeberg.org/jerryjhird/Cuoreterm
     rv_vm.h: https://codeberg.org/Dcraftbg/rv_vm.h
 
 

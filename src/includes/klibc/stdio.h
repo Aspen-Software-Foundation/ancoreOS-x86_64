@@ -64,8 +64,5 @@
  * note: depends on terminal_putchar() and itoa() being defined elsewhere
  */
 void printf(const char *format, ...);
-struct terminal;
-void terminal_set_instance(struct terminal *term, uint32_t fg);
-//void readline(struct writeout_t *wo, char *buf, size_t size);
 
 #endif

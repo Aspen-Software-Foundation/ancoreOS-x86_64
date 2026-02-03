@@ -39,11 +39,12 @@
 #include <stdint.h>
 #include "includes/memory/pmm.h"
 #include "includes/memory/vmm.h"
-#include "arch/limine.h"
+#include "../../limine/limine.h"
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
-#include "includes/util/serial.h"
-#include "includes/util/log-info.h"
+#include "util/includes/serial.h"
+#include "util/includes/log-info.h"
 
 
 extern volatile struct limine_hhdm_request hhdm_request;

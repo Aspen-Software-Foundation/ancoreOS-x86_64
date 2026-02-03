@@ -44,10 +44,10 @@
 #include "includes/arch/x86_64/io.h"
 #include "includes/storage/sata.h"
 #include "includes/storage/scsi.h"
-#include "includes/util/endian.h"
-#include "includes/util/log-info.h"
+#include "util/includes/endian.h"
+#include "util/includes/log-info.h"
 #include "includes/memory/vmm.h"
-#include "includes/util/endian.h"
+#include "util/includes/endian.h"
 #include "includes/time/time.h"
 #include "includes/storage/stinit.h" 
 

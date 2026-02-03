@@ -289,7 +289,8 @@ char *strtok(char *str, const char *delim)
 	return start;
 }
 
-int ipow(int base, int exp)
+//int ipow(int base, int exp)
+int ipow(int exp)
 {
 	int res = 1;
 	for (int i = 0; i < exp; i++)

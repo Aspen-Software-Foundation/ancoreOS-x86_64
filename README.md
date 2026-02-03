@@ -5,7 +5,7 @@ therefore fixing the issue of having to dualboot Windows and Linux.
 
 This operating system uses a modular build system made in the GNU Makefile Language, a fast and complex build language made specifically for large projects. More information can be found here: https://www.gnu.org/software/make/
 
-Currently, the VNiX Operating System uses Cuoreterm for its terminal. Cuoreterm is a super lightweight and freestanding terminal made by JerryJhird for CuoreOS. 
+Currently, the VNiX Operating System uses Flanterm for its terminal, as it is feature rich and includes better scrolling and color handling. 
 VNiX also features RISCV32 program support, made by Dcraftbg. For more information about either one of these projects, visit the links at the bottom of this README.md.
 This OS also features the Limine Bootloader, because of its extensive features and ease of use. I personally support its goals and achievements, which is why i've included it in this project.
 
@@ -43,68 +43,27 @@ root-dir:
 │   ├── Build-Logs
 │   │   └── Build-Logs
 │   ├── Contributers-Maintainers
-│   │   └── CONTRIBUTERS
+│   │   └── CONTRIBUTORS
 │   ├── Development
 │   │   └── EXE-Support
 │   ├── Error-Codes
 │   │   └── placeholder
 │   └── Other
 │       └── Gaming
-├── Assets
-│   └── wallpaper4k.png
-├── build
-│   ├── VNiX-uefi_dev-prototype.img
-│   ├── gdt.o
-│   ├── idt.o
-│   ├── io.o
-│   ├── isr.o
-│   ├── isrs_gen.o
-│   ├── isr_stubs.o
-│   ├── kernel.elf
-│   ├── kernel.o
-│   ├── liballoc-impl.o
-│   ├── liballoc.o
-│   ├── log-info.o
-│   ├── pmm.o
-│   ├── serial.o
-│   ├── stdio.o
-│   ├── stdlib.o
-│   ├── string.o
-│   ├── term.o
-│   ├── usb_root
-│   │   ├── boot
-│   │   │   ├── kernel.elf
-│   │   │   └── wallpaper4k.png
-│   │   ├── EFI
-│   │   │   └── BOOT
-│   │   │       └── BOOTX64.EFI
-│   │   ├── limine.conf
-│   │   └── startup.nsh
-│   └── vmm.o
 ├── limine
-│   ├── BOOTAA64.EFI
-│   ├── BOOTIA32.EFI
-│   ├── BOOTLOONGARCH64.EFI
-│   ├── BOOTRISCV64.EFI
+│   ├── Assets
+│   │   └── wallpaper4k.png
 │   ├── BOOTX64.EFI
-│   ├── LICENSE
-│   ├── limine-bios-cd.bin
 │   ├── limine-bios-hdd.h
-│   ├── limine-bios-pxe.bin
-│   ├── limine-bios.sys
 │   ├── limine.c
-│   ├── limine-uefi-cd.bin
-│   └── Makefile
+│   └── limine.h
 ├── linker.ld
 ├── Makefile
 ├── ovmf
-│   ├── OVMF_CODE_4M.fd
-│   ├── OVMF.fd
-│   └── OVMF_VARS_4M.fd
+│   └── OVMF.fd
 ├── README.md
 ├── src
 │   ├── arch
-│   │   ├── limine.h
 │   │   └── x86_64
 │   │       ├── gdt.c
 │   │       ├── idt.c
@@ -113,32 +72,44 @@ root-dir:
 │   │       ├── isrs_gen.c
 │   │       └── isr_stubs.asm
 │   ├── drivers
-│   │   ├── emul
-│   │   │   └── rv_vm.h
-│   │   │       ├── LICENSE.md
-│   │   │       └── rv_vm.h
 │   │   ├── klibc
 │   │   │   ├── stdio.c
 │   │   │   ├── stdlib.c
 │   │   │   └── string.c
 │   │   ├── memory
-│   │   │   ├── liballoc
-│   │   │   │   ├── liballoc_1_1.c
-│   │   │   │   ├── liballoc_1_1.h
-│   │   │   │   ├── liballoc.c
-│   │   │   │   └── liballoc.h
-│   │   │   ├── liballoc-impl.c
+│   │   │   ├── heapalloc
+│   │   │   │   ├── tlsf.c
+│   │   │   │   └── tlsf.h
 │   │   │   ├── pmm.c
 │   │   │   └── vmm.c
+│   │   ├── pci
+│   │   │   └── pci.c
+│   │   ├── pic
+│   │   │   ├── apic
+│   │   │   │   ├── apic.c
+│   │   │   │   └── apic_irq.c
+│   │   │   ├── pic.c
+│   │   │   └── pic_irq.c
+│   │   ├── shell
+│   │   │   ├── keyboard.c
+│   │   │   └── shell.c
+│   │   ├── storage
+│   │   │   ├── ata.c
+│   │   │   ├── atapi.c
+│   │   │   ├── sata.c
+│   │   │   ├── stinit.c
+│   │   │   └── storage.c
 │   │   ├── terminal
-│   │   │   ├── LICENSE
 │   │   │   └── src
-│   │   │       ├── cuoreterm.h
-│   │   │       ├── kfont.h
-│   │   │       └── term.c
-│   │   └── util
-│   │       ├── log-info.c
-│   │       └── serial.c
+│   │   │       ├── flanterm_backends
+│   │   │       │   ├── fb.c
+│   │   │       │   ├── fb.h
+│   │   │       │   └── fb_private.h
+│   │   │       ├── flanterm.c
+│   │   │       ├── flanterm.h
+│   │   │       └── flanterm_private.h
+│   │   └── time
+│   │       └── time.c
 │   ├── includes
 │   │   ├── arch
 │   │   │   └── x86_64
@@ -146,39 +117,71 @@ root-dir:
 │   │   │       ├── idt.h
 │   │   │       ├── io.h
 │   │   │       └── isr.h
+│   │   ├── fs
+│   │   │   └── filesystem.h
+│   │   ├── hci
+│   │   │   └── ehci.h
 │   │   ├── klibc
+│   │   │   ├── ctype.h
+│   │   │   ├── errno.h
+│   │   │   ├── signal.h
 │   │   │   ├── stdarg.h
 │   │   │   ├── stdbool.h
+│   │   │   ├── stddef.h
 │   │   │   ├── stdint.h
 │   │   │   ├── stdio.h
 │   │   │   ├── stdlib.h
-│   │   │   └── string.h
+│   │   │   ├── string.h
+│   │   │   └── sys
+│   │   │       └── types.h
 │   │   ├── memory
-│   │   │   ├── alloc
 │   │   │   ├── pmm.h
 │   │   │   └── vmm.h
-│   │   └── util
-│   │       ├── endian.h
-│   │       ├── log-info.h
-│   │       ├── serial.h
-│   │       └── util.h
+│   │   ├── pci
+│   │   │   └── pci.h
+│   │   ├── pic
+│   │   │   ├── apic
+│   │   │   │   ├── apic.h
+│   │   │   │   └── apic_irq.h
+│   │   │   ├── pic.h
+│   │   │   └── pic_irq.h
+│   │   ├── shell
+│   │   │   ├── keyboard.h
+│   │   │   ├── keyboard_macros.h
+│   │   │   └── shell.h
+│   │   ├── storage
+│   │   │   ├── ata.h
+│   │   │   ├── atapi.h
+│   │   │   ├── sata.h
+│   │   │   ├── scsi.h
+│   │   │   ├── stinit.h
+│   │   │   └── storage.h
+│   │   └── time
+│   │       └── time.h
 │   ├── kernel
 │   │   └── kernel.c
-│   └── limine.conf
+│   ├── limine.conf
+│   └── util
+│       ├── includes
+│       │   ├── endian.h
+│       │   ├── log-info.h
+│       │   ├── math.h
+│       │   ├── serial.h
+│       │   └── util.h
+│       ├── log-info.c
+│       ├── math.c
+│       └── serial.c
+└── TODO
 
 ```
 ---
 
 ## License
 
-Most of this project is licensed and shipped under GPLv2 as seen in the LICENSE file, but some code snippets/files may be subject to MPLv2 or different licenses. 
+Most of this project is licensed and shipped under GPLv2 as seen in the LICENSE file, but some code snippets/files may be subject to different licenses. 
 Please refer to the file contents and the disclaimer at the top of the file for more information.
 
 ---
 ## External project links
-             
-CuoreOS: https://codeberg.org/jerryjhird/CuoreOS
-
-Cuoreterm: https://codeberg.org/jerryjhird/Cuoreterm
-
+          
 rv_vm.h: https://codeberg.org/Dcraftbg/rv_vm.h

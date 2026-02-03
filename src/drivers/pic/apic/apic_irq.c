@@ -44,8 +44,8 @@
 
 #include <stddef.h>
 #include <stdio.h>
-#include "includes/util/log-info.h"
-#include "includes/util/serial.h"
+#include "util/includes/log-info.h"
+#include "util/includes/serial.h"
 
 #define APIC_REMAP_OFFSET        0x20  // remap base for APIC interrupts
 #define MAX_IRQS                 64    // set for simplicity (i can NOT debug for more than 30 minutes)

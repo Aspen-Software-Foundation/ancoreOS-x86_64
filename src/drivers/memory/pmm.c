@@ -37,10 +37,11 @@
 */
 
 #include <stddef.h>
+#include <stdlib.h>
 #include "includes/memory/pmm.h"
-#include "arch/limine.h"
+#include "../../limine/limine.h"
 #include <stdio.h>
-#include "includes/util/log-info.h"
+#include "util/includes/log-info.h"
 
 static uint64_t pmm_total_pages = 0;
 static uint64_t pmm_free_pages  = 0;

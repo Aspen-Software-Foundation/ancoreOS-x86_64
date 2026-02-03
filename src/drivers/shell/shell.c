@@ -36,14 +36,17 @@
  * MA 02110-1301, USA.
 */
 
-#include "drivers/terminal/src/cuoreterm.h"
 #include <string.h>  
-#include "includes/util/serial.h"
+#include "util/includes/serial.h"
 #include "includes/shell/keyboard.h"
+#include "util/includes/log-info.h"
+#include "drivers/terminal/src/flanterm.h"
 #include <stdio.h>
 #include "includes/memory/pmm.h"
 #include "includes/arch/x86_64/isr.h"
 #include <stdlib.h>
+
+extern struct flanterm_context *global_flanterm;
 
 typedef enum {
     SHCMD_HELP,
@@ -66,11 +69,6 @@ shell_command_t get_command(const char *buffer) {
     return SHCMD_UNKNOWN;
 }
 
-
-
-extern struct terminal fb_term;
-
-
 void print_string(const char* str) {
     printf("%s", str);
 }
@@ -80,33 +78,42 @@ void print_char(char c) {
 }
 
 void cmd_help(void) {
-    printf("Available commands:\n");
-    printf("  help  - Show this help\n");
-    printf("  echo  - Echo arguments\n");
-    printf("  clear - Clear screen\n");
-    printf("  pmmstats - Gets the PMM stats\n");
-    printf("  panic    - Calls a kernel panic\n");
-    printf("  birdsay  - Cowsay, but with a bird\n");
+    printf("%sAvailable commands:%s\n", COLOR_CYAN, COLOR_RESET);
+    printf("  %shelp%s      - Show this help\n", COLOR_GREEN, COLOR_RESET);
+    printf("  %secho%s      - Echo arguments\n", COLOR_GREEN, COLOR_RESET);
+    printf("  %sclear%s     - Clear screen\n", COLOR_GREEN, COLOR_RESET);
+    printf("  %spmmstats%s  - Gets the PMM stats\n", COLOR_GREEN, COLOR_RESET);
+    printf("  %spanic%s     - Calls a kernel panic\n", COLOR_GREEN, COLOR_RESET);
+    printf("  %sbirdsay%s   - Cowsay, but with a bird\n", COLOR_GREEN, COLOR_RESET);
 }
-
-
 
 void cmd_clear(void) {
-    cuoreterm_clear(&fb_term);
+    if (global_flanterm) {
+        flanterm_write(global_flanterm, "\033[2J", 4);  // Clear screen
+        flanterm_write(global_flanterm, "\033[H", 3);   // Move cursor to home
+    }
 }
-void pmmstats(void){
+
+void pmmstats(void) {
     uint64_t total = pmm_get_total_pages();
     uint64_t free  = pmm_get_free_pages();
     uint64_t used  = pmm_get_used_pages();
-        printf("PMM stats:\n");
-printf("  Total pages: %llu pages (%llu MB)\n", total, (total * PAGE_SIZE) / (1024 * 1024));
-printf("  Free pages : %llu pages (%llu MB)\n", free,  (free  * PAGE_SIZE) / (1024 * 1024));
-printf("  Used pages : %llu pages (%llu MB)\n", used,  (used  * PAGE_SIZE) / (1024 * 1024));
-printf("  Page size  : %llu KB\n", PAGE_SIZE);
+    
+    printf("%sPMM Statistics:%s\n", COLOR_CYAN, COLOR_RESET);
+    printf("  Total pages: %s%llu%s pages (%s%llu MB%s)\n", 
+           COLOR_YELLOW, total, COLOR_RESET,
+           COLOR_YELLOW, (total * PAGE_SIZE) / (1024 * 1024), COLOR_RESET);
+    printf("  Free pages : %s%llu%s pages (%s%llu MB%s)\n", 
+           COLOR_GREEN, free, COLOR_RESET,
+           COLOR_GREEN, (free * PAGE_SIZE) / (1024 * 1024), COLOR_RESET);
+    printf("  Used pages : %s%llu%s pages (%s%llu MB%s)\n", 
+           COLOR_RED, used, COLOR_RESET,
+           COLOR_RED, (used * PAGE_SIZE) / (1024 * 1024), COLOR_RESET);
+    printf("  Page size  : %s%llu KB%s\n", 
+           COLOR_CYAN, PAGE_SIZE / 1024, COLOR_RESET);
 }
 
-void panic(void){
-
+void panic(void) {
     kpanic(NULL);
 }
 
@@ -114,14 +121,14 @@ void execute(char* buffer) {
     // skip leading spaces
     while (*buffer == ' ') buffer++;
     
-    //if empty, return
-if (*buffer == '\0') return;
+    // if empty, just return
+    if (*buffer == '\0') return;
     
-    // find command end
+    // find cmd end
     char* args = buffer;
     while (*args && *args != ' ') args++;
     
-    // separate da command from arguments
+    // seperate cmd from args
     int has_args = 0;
     if (*args) {
         *args = '\0';
@@ -130,69 +137,74 @@ if (*buffer == '\0') return;
         has_args = (*args != '\0');
     }
 
-
-
     switch (get_command(buffer)) {
+        case SHCMD_HELP:
+            cmd_help();
+            break;
 
-    case SHCMD_HELP:
-        cmd_help();
-        break;
+        case SHCMD_ECHO:
+            if (has_args) {
+                print_string(args);
+                printf("\n");
+            } else {
+                print_char('\n');
+            }
+            break;
 
-    case SHCMD_ECHO:
-        if (has_args) {
-            print_string(args);
-            printf("\n");
-        } else {
-            print_char('\n');
-        }
-        break;
+        case SHCMD_CLEAR:
+            cmd_clear();
+            break;
 
-    case SHCMD_CLEAR:
-        cmd_clear();
-        break;
+        case SHCMD_PMMSTATS:
+            pmmstats();
+            break;
 
-    case SHCMD_PMMSTATS:
-        pmmstats();
-        break;
+        case SHCMD_PANIC:
+            panic();
+            break;
 
-    case SHCMD_PANIC:
-        panic();
-        break;
+        case SHCMD_BIRDSAY:
+            if (has_args) {
+                printf("%s", COLOR_YELLOW);
+                printf("   \\\\\n");
+                printf("   (o>\n");
+                printf("\\\\_//)\n");
+                printf(" \\_/_)\n");
+                printf("  _|_  %s----> %s", COLOR_RESET, COLOR_CYAN);
+                print_string(args);
+                printf("%s\n", COLOR_RESET);
+            } else {
+                print_char('\n');
+            }
+            break;
 
-    case SHCMD_BIRDSAY:
-        if (has_args) {
-            printf("   \\\\\n");
-            printf("   (o>\n");
-            printf("\\\\_//)\n");
-            printf(" \\_/_)\n");
-            printf("  _|_  ----> ");
-            print_string(args);
-            print_char('\n');
-        } else {
-            print_char('\n');
-        }
-        break;
-
-    default:
-        printf("Unknown command: ");
-        print_string(buffer);
-        printf("\nType 'help' for available commands.\n");
-        break;
+        default:
+            printf("%sUnknown command:%s ", COLOR_RED, COLOR_RESET);
+            print_string(buffer);
+            printf("\nType '%shelp%s' for available commands.\n", 
+                   COLOR_GREEN, COLOR_RESET);
+            break;
+    }
 }
 
-}
-
-//loop
+// Main shell loop
 void shell_main(void) {
     char buffer[256];
     int pos;
     char c;
     
-    printf("VNiX Interactive Shell v1.0\n");
-    printf("Type 'help' for commands\n\n");
+    printf("%s", COLOR_BOLD);
+    printf("╔════════════════════════════════════════╗\n");
+    printf("║   VNiX Interactive Shell v1.1          ║\n");
+    printf("║   Type 'help' for available commands   ║\n");
+    printf("╚════════════════════════════════════════╝\n");
+    printf("%s\n", COLOR_RESET);
     
     while (1) {
-        printf("vnix@root:$> ");
+        printf("%svnix%s@%sroot%s:%s$>%s ", 
+               COLOR_GREEN, COLOR_RESET,
+               COLOR_BLUE, COLOR_RESET,
+               COLOR_YELLOW, COLOR_RESET);
         
         pos = 0;
         while (1) {
@@ -201,12 +213,12 @@ void shell_main(void) {
             if (c == '\n' || c == '\r') {
                 printf("\n");
                 break;
-            } else if (c == '\b' || c == 127) {  // backspace or DEL
-            if (pos > 0) {
+            } else if (c == '\b' || c == 127) {  // Backspace or DEL
+                if (pos > 0) {
                     pos--;
-                    printf("\b \b");  //delete the char
+                    printf("\b \b");
                 }
-            } else if (c >= 32 && c < 127 && pos < 255) {  // printable char
+            } else if (c >= 32 && c < 127 && pos < 255) { //see if its a printable char
                 buffer[pos++] = c;
                 printf("%c", c);  // echo char
             }
@@ -217,4 +229,3 @@ void shell_main(void) {
         execute(buffer);
     }
 }
-//note: chars that are deleted dont look deleted
